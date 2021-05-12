@@ -57,7 +57,7 @@ class Router extends EventEmitter {
       }
     }
 
-    const component = new route.component()
+    const component = new route.component(this)
     if (isFunction(component.created)) {
       component.created()
     }

@@ -21,6 +21,8 @@ function initRouter () {
     entry: DOM.container,
     routes: routes
   })
+
+  window.router = router
 }
 
 function initEvents () {

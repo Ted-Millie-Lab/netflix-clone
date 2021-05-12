@@ -5,17 +5,16 @@ const template = `
   <p>여기는 영화 입니다.</p>
 `
 class Movie extends View {
-  constructor () {
-    const attr = {
+  constructor (router) {
+    super({
       innerHTML: template,
       className: 'movie'
-    }
+    })
 
-    super(attr)
+    this._router = router
   }
 
   created () {
-    // console.log('created - Movie')
   }
 
   mounted () {

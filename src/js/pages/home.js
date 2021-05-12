@@ -3,15 +3,16 @@ import View from './view'
 const template = `
   <h2>홈</h2>
   <p>여기는 홈 입니다.</p>
+  <a href="/tv">tv로 이동</a>
 `
 class Home extends View {
-  constructor () {
-    const attr = {
+  constructor (router) {
+    super({
       innerHTML: template,
       className: 'home'
-    }
+    })
 
-    super(attr)
+    this._router = router
   }
  
   created () {
