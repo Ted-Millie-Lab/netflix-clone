@@ -1,17 +1,17 @@
 import View from './view'
 
 const template = `
-  <div class="movie">
-    <h2>영화</h2>
-    <p>여기는 영화 입니다.</p>  
-  </div>
+  <h2>영화</h2>
+  <p>여기는 영화 입니다.</p>
 `
-
 class Movie extends View {
   constructor () {
-    super()
-    
-    this.template = template
+    const attr = {
+      innerHTML: template,
+      className: 'movie'
+    }
+
+    super(attr)
   }
 
   created () {

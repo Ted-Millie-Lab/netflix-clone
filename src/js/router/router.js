@@ -62,7 +62,7 @@ class Router extends EventEmitter {
       component.created()
     }
 
-    $entry.insertAdjacentHTML('beforeend', component.template)
+    $entry.appendChild(component.$element)
 
     if (isFunction(component.mounted)) {
       setTimeout(() => component.mounted(), 1)
@@ -75,12 +75,12 @@ class Router extends EventEmitter {
     return this._routes.find(route => route.path === path)
   }
 
-  _getCurrentPath () {
+  _getPath () {
     return window.location.pathname || this._initialRoute
   }
 
   _onpopstate () {
-    const path = this._getCurrentPath()
+    const path = this._getPath()
     const route = this._getRoute(path)
     if (route) {
       this._render(route)

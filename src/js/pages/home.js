@@ -1,25 +1,25 @@
 import View from './view'
 
 const template = `
-  <div class="home">
-    <h2>홈</h2>
-    <p>여기는 홈 입니다.</p>  
-  </div>
+  <h2>홈</h2>
+  <p>여기는 홈 입니다.</p>
 `
-
 class Home extends View {
   constructor () {
-    super()
+    const attr = {
+      innerHTML: template,
+      className: 'home'
+    }
 
-    this.template = template
+    super(attr)
   }
-
+ 
   created () {
-    // console.log('created - home')
+    
   }
 
   mounted () {
-    // console.log('mounted - home')
+    
   }
 
   destroyed () {
