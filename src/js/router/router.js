@@ -22,7 +22,10 @@ class Router extends EventEmitter {
 
   _initRender () {
     const path = this._initialRoute
-    this.go(path)
+    const route = this._getRoute(path)
+    if (route) {
+      this._render(route)
+    }
   }
 
   _initEvents () {
