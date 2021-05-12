@@ -1,0 +1,13 @@
+html {
+  overflow-y: scroll;
+}
+
+body {
+  min-width: 280px;
+}
+
+img {
+  max-width: 100%;
+  vertical-align: top;
+  object-fit: cover;
+}

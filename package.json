@@ -1,0 +1,27 @@
+{
+  "name": "netflix-clone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/app.js",
+  "scripts": {
+    "dev": "parcel ./src/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ted-millie/netflix-clone.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ted-millie/netflix-clone/issues"
+  },
+  "homepage": "https://github.com/ted-millie/netflix-clone#readme",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5",
+    "sass": "^1.32.12"
+  },
+  "dependencies": {
+    "standardx": "^7.0.0"
+  }
+}
