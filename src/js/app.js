@@ -4,8 +4,7 @@ import Router from './router/router'
 import routes from './router/routes'
 
 const DOM = {
-  container: document.getElementById('container'),
-  navLinks: document.querySelectorAll('.links > a')
+  container: document.getElementById('container')
 }
 
 let router = null
@@ -26,14 +25,18 @@ function initRouter () {
 }
 
 function initEvents () {
-  Array.from(DOM.navLinks).forEach(link => link.addEventListener('click', onNavLink))
+  document.addEventListener('click', onRouteLinks)
 }
 
-function onNavLink (event) {
-  event.preventDefault()
+function onRouteLinks (event) {
+  const target = event.target
+  const tagName = target.tagName.toUpperCase()
+  if (tagName === 'A') {
+    event.preventDefault()
 
-  const path = event.target.getAttribute('href')
-  router.go(path)
+    const path = target.getAttribute('href')
+    router.go(path)
+  }
 }
 
 init()
