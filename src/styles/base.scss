@@ -1,13 +1,27 @@
+* {
+  box-sizing: border-box;
+}
+
 html {
   overflow-y: scroll;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   min-width: 280px;
+  font-size: 16px;
+  color: var(--primary-text-color);
+  background: var(--primary-background-color);
+  word-break: keep-all;
 }
 
 img {
   max-width: 100%;
   vertical-align: top;
   object-fit: cover;
+}
+
+a {
+  color: var(--primary-text-color);
+  text-decoration: none;
 }

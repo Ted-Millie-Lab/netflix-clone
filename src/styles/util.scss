@@ -8,3 +8,47 @@
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+
+.swiper-wrapper {
+  white-space: nowrap;
+  font-size: 0;
+  .swiper-slide {
+    position: relative;
+    display: inline-block;
+    width: 16.66666667%;
+    padding: 0 2px;
+    font-size: 16px;
+    @media (max-width: 1400px) {
+      width: 20%;
+    }
+    @media (max-width: 1024px) {
+      width: 25%;
+    }
+    @media (max-width: 768px) {
+      width: 33.333333%;
+    }
+    @media (max-width: 600px) {
+      width: 50%;
+    }
+    > a {
+      position: relative;
+      display: block;
+      border-radius: 4px;
+      overflow: hidden;
+      &::before {
+        content: "";
+        display: block;
+        background-color: rgba(255, 255, 255, .1);
+        padding-bottom: 56.25%
+      }
+      img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+      }
+    }
+  }
+}
+

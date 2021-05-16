@@ -1,0 +1,38 @@
+.nc-header {
+  position: -webkit-sticky;
+  position: sticky;
+  display: flex;
+  align-items: center;
+  top: 0;
+  height: 68px;
+  padding: 0 var(--left-right-spacing);
+  background-color: var(--primary-background-color);
+
+  .nc-branding {
+    margin: 0;
+  }
+
+  .nc-logo {
+    display: block;
+  }  
+
+  .nc-nav {
+    display: flex;
+    margin: 0 24px;
+
+    > a {
+      display: block;
+      padding: 10px;
+      transition: color .2s;      
+      &:hover {
+        color: #b3b3b3;
+      }
+    }
+  }
+
+  .nc-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+}
