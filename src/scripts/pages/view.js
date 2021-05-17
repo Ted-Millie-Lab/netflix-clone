@@ -15,8 +15,8 @@ class View {
         }
 
         const image = entry.target
-        image.src = image.dataset.src
         image.onload = () => image.parentNode.classList.add('loaded')
+        image.src = image.dataset.src
 
         io.unobserve(image)
       })
@@ -38,6 +38,8 @@ class View {
     for (const elem of refs) {
       const key = elem.getAttribute('ref')
       this.$refs[key] = elem
+
+      elem.removeAttribute('ref')
     }
 
     return div
