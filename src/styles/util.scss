@@ -41,12 +41,19 @@
         background-color: rgba(255, 255, 255, .1);
         padding-bottom: 56.25%
       }
+      &.loaded {
+        img {
+          opacity: 1;
+        }
+      }
       img {
         position: absolute;
         left: 0;
         top: 0;
         right: 0;
         bottom: 0;
+        opacity: 0;
+        transition: opacity .24s;
       }
     }
   }

@@ -13,6 +13,8 @@ body {
   color: var(--primary-text-color);
   background: var(--primary-background-color);
   word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 img {

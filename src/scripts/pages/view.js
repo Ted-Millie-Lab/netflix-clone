@@ -7,6 +7,24 @@ class View {
     this.Swiper = Swiper
   }
 
+  lazyLoad (images) {
+    const io = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+          return
+        }
+
+        const image = entry.target
+        image.src = image.dataset.src
+        image.onload = () => image.parentNode.classList.add('loaded')
+
+        io.unobserve(image)
+      })
+    })
+
+    images.forEach(image => io.observe(image))
+  }
+
   _createElement (attr) {
     const div = document.createElement('div')
     if (attr) {
