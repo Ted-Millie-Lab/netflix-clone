@@ -1,28 +1,39 @@
-import Swiper from 'swiper';
+import {
+  isFunction
+} from '../helper/utils'
 
 class View {
   constructor (attr) {
     this.$refs = {}
-    this.$element = this._createElement(attr)
-    this.Swiper = Swiper
+    this.$el = this._createElement(attr)
   }
 
-  lazyLoad (images) {
+  observer (elem, callback) {
     const io = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
-        if (!entry.isIntersecting) {
-          return
+        if (entry.isIntersecting) {
+          if (isFunction(callback)) {
+            callback.call(this, entry.target)
+          }
+          io.unobserve(entry.target)
         }
-
-        const image = entry.target
-        image.onload = () => image.parentNode.classList.add('loaded')
-        image.src = image.dataset.src
-
-        io.unobserve(image)
       })
     })
 
-    images.forEach(image => io.observe(image))
+    if (elem instanceof NodeList) {
+      Array.from(elem).forEach(target => io.observe(target))
+    } else {
+      io.observe(elem)
+    }
+  }
+
+  lazyLoad (images) {
+    this.observer(images, (image) => {
+      image.onload = () => {
+        image.parentNode.classList.add('loaded')
+      }
+      image.src = image.dataset.src
+    })
   }
 
   _createElement (attr) {

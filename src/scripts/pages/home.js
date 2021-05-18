@@ -1,4 +1,5 @@
 import View from './view'
+import Swiper from '../lib/swiper'
 import {
   repeat
 } from '../helper/utils'
@@ -82,54 +83,85 @@ class Home extends View {
     this._renderSwipeComedy()
   }
 
-  async _renderSwipeTrending () {
-    const { results } = await tmdb.getTrending()
+  _renderSwipeTrending () {
     const trending = this.$refs.trending
-    this._renderSwipe(trending, results)
+    this.observer(trending, () => {
+      tmdb.getTrending()
+        .then(({ results }) => this._renderSwipe(trending, results))
+        .then(() => {
+          // init Swiper
+          new Swiper(trending)
+        })
+    })
   }
 
-  async _renderSwipeAnimation () {
-    const { results } = await tmdb.getPopularGenre(16)
+  _renderSwipeAnimation () {
     const animation = this.$refs.animation
-    this._renderSwipe(animation, results)
+    this.observer(animation, () => {
+      tmdb.getPopularGenre(16)
+        .then(({ results }) => this._renderSwipe(animation, results))
+        .then(() => {
+          // init Swiper
+          new Swiper(animation)
+        })
+    })
   }
 
-  async _renderSwipeRomance () {
-    const { results } = await tmdb.getPopularGenre(10749)
+  _renderSwipeRomance () {
     const romance = this.$refs.romance
-    this._renderSwipe(romance, results)
+    this.observer(romance, () => {
+      tmdb.getPopularGenre(10749)
+        .then(({ results }) => this._renderSwipe(romance, results))
+        .then(() => {
+          // init Swiper
+          new Swiper(romance)
+        })
+    })
   }
 
-  async _renderSwipeComedy () {
-    const { results } = await tmdb.getPopularGenre(35)
+  _renderSwipeComedy () {
     const comedy = this.$refs.comedy
-    this._renderSwipe(comedy, results)
+    this.observer(comedy, () => {
+      tmdb.getPopularGenre(35)
+        .then(({ results }) => this._renderSwipe(comedy, results))
+        .then(() => {
+          // init Swiper
+          new Swiper(comedy)
+        })
+    })
   }
 
   _renderSwipe (elem, results) {
-    while (elem.hasChildNodes()) {
-      elem.removeChild(elem.lastChild)
-    }
+    return new Promise((resolve, reject) => {
+      while (elem.hasChildNodes()) {
+        elem.removeChild(elem.lastChild)
+      }
+  
+      const length = results.length
+      for (let i = 0; i < length; i++) {
+        const data = results[i]
+        const isLast = i === length - 1
+        requestAnimationFrame(() => {
+          elem.insertAdjacentHTML('beforeend', `
+            <div class="nc-swiper-slide">
+              <a href="/">
+                <div class="thumbnail">
+                  <img data-src="${tmdb.IMG_URL + data.backdrop_path}">
+                </div>
+                <div class="metadata">${data.title}</div>
+              </a>
+            </div>
+          `)
+  
+          if (isLast) {
+            const iamges = elem.querySelectorAll('[data-src]')
+            this.lazyLoad(iamges)
 
-    const length = results.length
-    for (let i = 0; i < length; i++) {
-      const data = results[i]
-      const isLast = i === length - 1
-      requestAnimationFrame(() => {
-        elem.insertAdjacentHTML('beforeend', `
-          <div class="nc-swiper-slide">
-            <a href="/">
-              <div class="thumbnail">
-                <img data-src="${tmdb.IMG_URL + data.backdrop_path}">
-              </div>
-              <div class="metadata">${data.title}</div>
-            </a>
-          </div>
-        `)
-
-        if (isLast) this.lazyLoad(elem.querySelectorAll('[data-src]'))
-      })
-    }
+            resolve()
+          }
+        })
+      }      
+    })
   }
 }
 

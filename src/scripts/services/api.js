@@ -2,7 +2,7 @@ const API_URL = 'https://api.themoviedb.org/3'
 const IMG_URL = 'https://image.tmdb.org/t/p/w500'
 const API_KEY = 'f4c88cfc1ab07d3728969b37401e8946'
 
-const _fetch = (path, query) => {
+const _fetch = (path, query = '') => {
   return window.fetch(`${API_URL + path}?api_key=${API_KEY}&language=ko&${query}`)
     .then(res => res.json())
 }

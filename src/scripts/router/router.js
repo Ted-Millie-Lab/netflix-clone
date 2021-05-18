@@ -8,8 +8,8 @@ class Router extends EventEmitter {
     super()
 
     this._$entry = entry
-    this._routes = routes
-    this._initialRoute = initialRoute || '/'
+    this._routes = routes    
+    this._initialRoute = initialRoute || '/' // 아 이거..
     this._previousComponent = null
 
     this._init()
@@ -21,7 +21,7 @@ class Router extends EventEmitter {
   }
 
   _initRender () {
-    const path = this._initialRoute
+    const path = this._getPath()
     const route = this._getRoute(path)
     if (route) {
       this._render(route)
@@ -62,7 +62,7 @@ class Router extends EventEmitter {
       component.created()
     }
 
-    $entry.appendChild(component.$element)
+    $entry.appendChild(component.$el)
 
     if (isFunction(component.mounted)) {
       setTimeout(() => component.mounted(), 1)
