@@ -3,4 +3,8 @@
   --secondary-text-color: #b3b3b3;
   --primary-background-color: #141414;
   --left-right-spacing: 60px;
+
+  @media (max-width: 1400px) {
+    --left-right-spacing: 4%;
+  }
 }

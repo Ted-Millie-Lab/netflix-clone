@@ -8,7 +8,7 @@ class View {
     this.$el = this._createElement(attr)
   }
 
-  observer (elem, callback) {
+  observer (elem, callback, options = null) {
     const io = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -18,7 +18,7 @@ class View {
           io.unobserve(entry.target)
         }
       })
-    })
+    }, options)
 
     if (elem instanceof NodeList) {
       Array.from(elem).forEach(target => io.observe(target))
@@ -27,13 +27,13 @@ class View {
     }
   }
 
-  lazyLoad (images) {
+  lazyLoad (images, options) {
     this.observer(images, (image) => {
       image.onload = () => {
         image.parentNode.classList.add('loaded')
       }
       image.src = image.dataset.src
-    })
+    }, options)
   }
 
   _createElement (attr) {

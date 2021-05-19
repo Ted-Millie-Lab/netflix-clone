@@ -10,33 +10,49 @@ import {
 const template = `
   <div class="nc-track">
     <h2 class="nc-title">지금 뜨는 콘텐츠</h2>
-    <div class="nc-swiper-container">
-      <div class="nc-swiper-wrapper" ref="trending">
-        ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+    <div class="nc-inner">
+      <div class="nc-swiper-container">
+        <div class="nc-swiper-prev"></div>
+        <div class="nc-swiper-wrapper" ref="trending">
+          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+        </div>
+        <div class="nc-swiper-next"></div>
       </div>
     </div>
   </div>
   <div class="nc-track">
     <h2 class="nc-title">애니메이션</h2>
-    <div class="nc-swiper-container">
-      <div class="nc-swiper-wrapper" ref="animation">
-        ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+    <div class="nc-inner">
+      <div class="nc-swiper-container">
+        <div class="nc-swiper-prev"></div>
+        <div class="nc-swiper-wrapper" ref="animation">
+          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+        </div>
+        <div class="nc-swiper-next"></div>
       </div>
     </div>
   </div>
   <div class="nc-track">
     <h2 class="nc-title">로맨스</h2>
-    <div class="nc-swiper-container">
-      <div class="nc-swiper-wrapper" ref="romance">
-        ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+    <div class="nc-inner">
+      <div class="nc-swiper-container">
+        <div class="nc-swiper-prev"></div>
+        <div class="nc-swiper-wrapper" ref="romance">
+          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+        </div>
+        <div class="nc-swiper-next"></div>
       </div>
     </div>
   </div>
   <div class="nc-track">
     <h2 class="nc-title">코메디</h2>
-    <div class="nc-swiper-container">
-      <div class="nc-swiper-wrapper" ref="comedy">
-        ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+    <div class="nc-inner">
+      <div class="nc-swiper-container">
+        <div class="nc-swiper-prev"></div>
+        <div class="nc-swiper-wrapper" ref="comedy">
+          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+        </div>
+        <div class="nc-swiper-next"></div>
       </div>
     </div>
   </div>  
@@ -50,6 +66,7 @@ class Home extends View {
     })
 
     this._router = router
+    this._swiperGroup = []
   }
 
   mounted () {
@@ -83,27 +100,23 @@ class Home extends View {
     this._renderSwipeComedy()
   }
 
+  destroyed() {
+    this._swiperGroup.forEach(swiper => swiper.destroy())
+  }
+
   _renderSwipeTrending () {
     const trending = this.$refs.trending
     this.observer(trending, () => {
       tmdb.getTrending()
         .then(({ results }) => this._renderSwipe(trending, results))
-        .then(() => {
-          // init Swiper
-          new Swiper(trending)
-        })
     })
-  }
+  }  
 
   _renderSwipeAnimation () {
     const animation = this.$refs.animation
     this.observer(animation, () => {
       tmdb.getPopularGenre(16)
         .then(({ results }) => this._renderSwipe(animation, results))
-        .then(() => {
-          // init Swiper
-          new Swiper(animation)
-        })
     })
   }
 
@@ -112,10 +125,6 @@ class Home extends View {
     this.observer(romance, () => {
       tmdb.getPopularGenre(10749)
         .then(({ results }) => this._renderSwipe(romance, results))
-        .then(() => {
-          // init Swiper
-          new Swiper(romance)
-        })
     })
   }
 
@@ -124,10 +133,6 @@ class Home extends View {
     this.observer(comedy, () => {
       tmdb.getPopularGenre(35)
         .then(({ results }) => this._renderSwipe(comedy, results))
-        .then(() => {
-          // init Swiper
-          new Swiper(comedy)
-        })
     })
   }
 
@@ -154,8 +159,18 @@ class Home extends View {
           `)
   
           if (isLast) {
-            const iamges = elem.querySelectorAll('[data-src]')
-            this.lazyLoad(iamges)
+            this.lazyLoad(elem.querySelectorAll('[data-src]'), {
+              threshold: 1.0
+            })
+
+            this._swiperGroup.push(
+              new Swiper(elem, {
+                navigation: {
+                  prevEl: elem.parentNode.querySelector('.nc-swiper-prev'),
+                  nextEl: elem.parentNode.querySelector('.nc-swiper-next')
+                }
+              })
+            )
 
             resolve()
           }

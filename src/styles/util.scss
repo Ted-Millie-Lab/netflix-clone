@@ -16,7 +16,7 @@
   right: 0;
   bottom: 0;
   opacity: 0;
-  transition: opacity .24s;
+  transition: opacity .2s;
 }
 .loaded {
   [data-src] {
@@ -67,3 +67,29 @@
   }
 }
 
+.nc-swiper-prev,
+.nc-swiper-next {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  width: var(--left-right-spacing);
+  color: #fff;
+  background-color: rgba(20, 20, 20, .5);
+  cursor: pointer;
+  transition: background-color .24s;
+  &:hover {
+    background-color: rgba(20, 20, 20, .7);
+  }
+}
+
+.nc-swiper-prev {
+  left: 0;
+}
+
+.nc-swiper-next {
+  right: 0;
+}

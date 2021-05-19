@@ -14,7 +14,7 @@
 
   .nc-logo {
     display: block;
-  }  
+  }
 
   .nc-nav {
     display: flex;
@@ -35,4 +35,9 @@
     align-items: center;
     margin-left: auto;
   }
+}
+
+.nc-inner {
+  position: relative;
+  padding: 0 var(--left-right-spacing);
 }

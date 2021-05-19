@@ -41,7 +41,7 @@ function onRouteLinks (event) {
   if (!target) {
     return
   }
-
+  
   event.preventDefault()
 
   const path = target.getAttribute('href')
