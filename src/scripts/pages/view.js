@@ -9,6 +9,8 @@ class View {
   }
 
   observer (elem, callback, options = null) {
+    elem = elem instanceof NodeList ? Array.from(elem) : elem
+
     const io = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -20,8 +22,8 @@ class View {
       })
     }, options)
 
-    if (elem instanceof NodeList) {
-      Array.from(elem).forEach(target => io.observe(target))
+    if (Array.isArray(elem)) {
+      elem.forEach(target => io.observe(target))
     } else {
       io.observe(elem)
     }

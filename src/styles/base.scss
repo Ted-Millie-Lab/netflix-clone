@@ -27,3 +27,13 @@ a {
   color: var(--primary-text-color);
   text-decoration: none;
 }
+
+button {
+  cursor: pointer;
+  outline: none;
+  border: 0;
+}
+
+svg {
+  outline: none;
+}

@@ -1,61 +1,77 @@
 import View from './view'
 import Swiper from '../lib/swiper'
+import SharedTransition from '../lib/shared-transition'
 import {
-  repeat
+  repeat,
+  debounce
 } from '../helper/utils'
 import {
   tmdb
 } from '../services/api'
 
 const template = `
-  <div class="nc-track">
-    <h2 class="nc-title">지금 뜨는 콘텐츠</h2>
-    <div class="nc-inner">
-      <div class="nc-swiper-container">
-        <div class="nc-swiper-prev"></div>
-        <div class="nc-swiper-wrapper" ref="trending">
-          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+  <div class="nc-tracks">
+    <div class="nc-track">
+      <h2 class="nc-title">지금 뜨는 콘텐츠</h2>
+      <div class="nc-inner">
+        <div class="nc-swiper-container">
+          <div class="nc-swiper-prev"></div>
+          <div class="nc-swiper-wrapper" ref="trending">
+            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+          </div>
+          <div class="nc-swiper-next"></div>
         </div>
-        <div class="nc-swiper-next"></div>
+      </div>
+    </div>
+    <div class="nc-track">
+      <h2 class="nc-title">애니메이션</h2>
+      <div class="nc-inner">
+        <div class="nc-swiper-container">
+          <div class="nc-swiper-prev"></div>
+          <div class="nc-swiper-wrapper" ref="animation">
+            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+          </div>
+          <div class="nc-swiper-next"></div>
+        </div>
+      </div>
+    </div>
+    <div class="nc-track">
+      <h2 class="nc-title">로맨스</h2>
+      <div class="nc-inner">
+        <div class="nc-swiper-container">
+          <div class="nc-swiper-prev"></div>
+          <div class="nc-swiper-wrapper" ref="romance">
+            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+          </div>
+          <div class="nc-swiper-next"></div>
+        </div>
+      </div>
+    </div>
+    <div class="nc-track">
+      <h2 class="nc-title">코메디</h2>
+      <div class="nc-inner">
+        <div class="nc-swiper-container">
+          <div class="nc-swiper-prev"></div>
+          <div class="nc-swiper-wrapper" ref="comedy">
+            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+          </div>
+          <div class="nc-swiper-next"></div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="nc-track">
-    <h2 class="nc-title">애니메이션</h2>
-    <div class="nc-inner">
-      <div class="nc-swiper-container">
-        <div class="nc-swiper-prev"></div>
-        <div class="nc-swiper-wrapper" ref="animation">
-          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
-        </div>
-        <div class="nc-swiper-next"></div>
+  <div class="nc-preview">
+    <div class="nc-preview-inner" ref="preview">
+      <div class="nc-preview-thumbnail">
+        <img src="" ref="small">
+        <img src="" ref="large">
+      </div>
+      <div class="nc-preview-metadata" ref="metadata"></div>
+      <div class="nc-preview-close">
+        <button type="button" ref="previewClose"><svg viewBox="0 0 24 24" data-uia="previewModal-closebtn" role="button" aria-label="close" tabindex="0"><path d="M12 10.586l7.293-7.293 1.414 1.414L13.414 12l7.293 7.293-1.414 1.414L12 13.414l-7.293 7.293-1.414-1.414L10.586 12 3.293 4.707l1.414-1.414L12 10.586z" fill="currentColor"></path></svg></button>
       </div>
     </div>
   </div>
-  <div class="nc-track">
-    <h2 class="nc-title">로맨스</h2>
-    <div class="nc-inner">
-      <div class="nc-swiper-container">
-        <div class="nc-swiper-prev"></div>
-        <div class="nc-swiper-wrapper" ref="romance">
-          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
-        </div>
-        <div class="nc-swiper-next"></div>
-      </div>
-    </div>
-  </div>
-  <div class="nc-track">
-    <h2 class="nc-title">코메디</h2>
-    <div class="nc-inner">
-      <div class="nc-swiper-container">
-        <div class="nc-swiper-prev"></div>
-        <div class="nc-swiper-wrapper" ref="comedy">
-          ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
-        </div>
-        <div class="nc-swiper-next"></div>
-      </div>
-    </div>
-  </div>  
 `
 
 class Home extends View {
@@ -67,6 +83,7 @@ class Home extends View {
 
     this._router = router
     this._swiperGroup = []
+    this._previewTimer = 0
   }
 
   mounted () {
@@ -100,8 +117,9 @@ class Home extends View {
     this._renderSwipeComedy()
   }
 
-  destroyed() {
+  destroyed () {
     this._swiperGroup.forEach(swiper => swiper.destroy())
+    this._swiperGroup = null
   }
 
   _renderSwipeTrending () {
@@ -159,24 +177,188 @@ class Home extends View {
           `)
   
           if (isLast) {
-            this.lazyLoad(elem.querySelectorAll('[data-src]'), {
-              threshold: 1.0
-            })
-
-            this._swiperGroup.push(
-              new Swiper(elem, {
-                navigation: {
-                  prevEl: elem.parentNode.querySelector('.nc-swiper-prev'),
-                  nextEl: elem.parentNode.querySelector('.nc-swiper-next')
-                }
-              })
-            )
-
-            resolve()
+            this._setupSwipe(elem)
+              .then(() => resolve())
           }
         })
-      }      
+      }
     })
+  }
+
+  _setupSwipe (elem) {
+    return new Promise((resolve, reject) => {
+      const images = Array.from(elem.querySelectorAll('[data-src]'))
+      this.lazyLoad(images, { threshold: 0.1 })
+
+      this._swiperGroup.push(
+        new Swiper(elem, {
+          navigation: {
+            prevEl: elem.parentNode.querySelector('.nc-swiper-prev'),
+            nextEl: elem.parentNode.querySelector('.nc-swiper-next')
+          }
+        })
+      )
+
+      images.forEach(image => {
+        image.addEventListener('click', this._showPreview.bind(this))
+        // image.addEventListener('mouseleave', this._hideMiniPreview.bind(this))
+      })
+
+      resolve()
+    })
+  }
+
+  _showPreview (event) {
+    const fromEl = event.target
+    const toEl = this.$refs.preview
+    const imgSmallSrc = fromEl.getAttribute('src')
+    const imgLargeSrc = imgSmallSrc.replace('w500', 'original')
+
+    const hero = new SharedTransition({
+      from: fromEl,
+      to: toEl
+    })
+
+    hero.on('beforePlayStart', () => {
+      // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
+      this.$refs.small.src = imgSmallSrc
+    })
+    hero.on('afterPlayEnd', () => {
+      // 애니메이션 완료 후 큰 이미지 로드
+      this.$refs.large.src = imgLargeSrc
+
+      toEl.parentNode.classList.add('expanded')
+
+      // test
+      this.$refs.previewClose.addEventListener('click', () => {
+        hero.reverse()
+      }, { once: true })
+    })
+
+    hero.on('beforeReverseEnd', () => {
+      
+    })
+
+    hero.on('afterReverseEnd', () => {
+      toEl.parentNode.classList.remove('expanded')
+      this.$refs.small.src = ''
+      this.$refs.large.src = ''
+    })
+
+    hero.animate()
+
+    // clearTimeout(this._previewTimer)
+    // this._previewTimer = setTimeout(() => {
+    //   const fromElem = event.target
+    //   const toElem = this.$refs.preview
+    //   const fromPoint = this._getRect(fromElem)
+    //   const toPoint = (() => {
+    //     const root = document.documentElement
+    //     const width = fromPoint.width * 1.5
+    //     const height = fromPoint.height * 1.5
+    //     const top = fromPoint.top - ((height - fromPoint.height) / 2) + root.scrollTop
+    //     let left = fromPoint.left - ((width - fromPoint.width) / 2)
+    //     if (left <= 0) {
+    //       left = fromPoint.left
+    //     } else if ((left + width) >= root.clientWidth) {
+    //       left = fromPoint.right - width
+    //     }
+
+    //     return {
+    //       width,
+    //       height,
+    //       left,
+    //       top
+    //     }
+    //   })()
+
+    //   const hero = new SharedTransition({
+    //     from: fromElem,
+    //     to: toElem,
+    //     points: {
+    //       from: fromPoint,
+    //       to: toPoint
+    //     }
+    //   })
+
+    //   const imgSmallSrc = fromElem.getAttribute('src')
+    //   const imgLargeSrc = imgSmallSrc.replace('w500', 'original')      
+    //   this.$refs.small.src = imgSmallSrc
+    //   this.$refs.large.src = imgLargeSrc
+
+    //   hero.animate({
+
+    //   })
+    // }, 500)
+
+    // setTimeout(() => {
+    //   fromElem.style.transition = `transform .24s`
+    //   fromElem.style.transform = `scale(1.5)`
+    //   fromElem.addEventListener('transitionend', () => {
+    //     const toRect = fromElem.getBoundingClientRect()
+    //     const toWdith = toRect.width
+    //     const toHeight = toRect.height
+    //     const toLeft = toRect.left
+    //     const toTop = toRect.top + window.scrollY
+    //     fromElem.style.cssText = `
+    //       display: block;
+    //       width: ${toWdith}px;
+    //       height: ${toHeight}px;
+    //       left: ${toLeft}px;
+    //       top: ${toTop}px;
+    //       transition: none;
+    //       transform: none;
+    //     `
+    //   }, { once: true })
+
+    //   fromElem.addEventListener('mouseleave', this._hideMiniPreview.bind(this), { once: true })
+    // }, 1)
+
+    // const from = target.getBoundingClientRect()
+    // const imgSmallSrc = target.getAttribute('src')
+    // const imgLargeSrc = imgSmallSrc.replace('w500', 'original')
+
+    // this.$refs.small.src = imgSmallSrc
+    // this.$refs.large.src = imgLargeSrc
+
+    // setTimeout(() => {
+    //   this.$refs.preview.style.transform = `scale(1.5)`
+
+    //   this.$refs.preview.addEventListener('transitionend', () => {
+    //     const to = this.$refs.preview.getBoundingClientRect()
+
+    //     this.$refs.preview.style.cssText = `
+    //       display: block;
+    //       width: ${to.width}px;
+    //       height: ${to.height}px;
+    //       left: ${to.left}px;
+    //       top: ${to.top + window.scrollY}px;
+    //       transition: none;
+    //       transform: none;
+    //     `
+
+    //   }, { once: true })
+    // }, 250)
+  }
+
+  _getRect (elem) {
+    const {
+      width,
+      height,
+      left,
+      top
+    } = elem.getBoundingClientRect()
+
+    return {
+      width,
+      height,
+      left,
+      top
+    }
+  }
+
+  _hideMiniPreview (event) {
+    clearTimeout(this._previewTimer)
   }
 }
 

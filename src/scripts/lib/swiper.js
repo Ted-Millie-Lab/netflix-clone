@@ -5,7 +5,9 @@ class Swiper extends EventEmitter {
     super()
     
     this.DOM = { elem: elem }
+  
     this.DOM.navigation = options.navigation || {}
+
     this.DOM.slides = Array.from(this.DOM.elem.children)
 
     // 현재 인덱스
@@ -161,7 +163,7 @@ class Swiper extends EventEmitter {
 
     // https://stackoverflow.com/questions/684575/how-to-quickly-clear-a-javascript-object
     for (const prop of Object.getOwnPropertyNames(this)) {
-      delete this[prop]
+      this[prop] = null
     }
   }
 }

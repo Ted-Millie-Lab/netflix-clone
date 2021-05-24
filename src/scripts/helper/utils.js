@@ -23,3 +23,27 @@ export function repeat (pattern, count) {
   }
   return result + pattern;
 }
+
+// From: https://medium.com/@TCAS3/debounce-deep-dive-javascript-es6-e6f8d983b7a1
+export function debounce (fn, time) {
+  let timeout
+
+  return function () {
+    const functionCall = () => fn.apply(this, arguments)
+
+    clearTimeout(timeout)
+    timeout = setTimeout(functionCall, time)
+  }
+}
+
+export function throttle (fn, delay) {
+  var allowSample = true;
+
+  return function(e) {
+    if (allowSample) {
+      allowSample = false;
+      setTimeout(function() { allowSample = true; }, delay);
+      fn(e);
+    }
+  };
+}
