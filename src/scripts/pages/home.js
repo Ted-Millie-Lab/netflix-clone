@@ -245,7 +245,7 @@ class Home extends View {
       this.$refs.large.src = ''
     })
 
-    hero.animate()
+    hero.play()
 
     // clearTimeout(this._previewTimer)
     // this._previewTimer = setTimeout(() => {

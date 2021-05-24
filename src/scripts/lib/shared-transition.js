@@ -19,7 +19,7 @@ class SharedTransition extends EventEmitter {
     
   }
 
-  animate () {
+  play () {
     if (this._isAnimating) {
       return
     }
