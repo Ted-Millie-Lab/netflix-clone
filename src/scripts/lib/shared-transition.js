@@ -120,6 +120,9 @@ class SharedTransition extends EventEmitter {
     }
 
     Object.assign(elem.style, props)
+
+    // visibility: hidden 처리 시 접근성 트리에서 제외 된다라고 mdn에는 나와있으나
+    // 국내 스크린 리더기는 아직 처리 안해주는 것 같음
     elem.offsetHeight
   }
 
