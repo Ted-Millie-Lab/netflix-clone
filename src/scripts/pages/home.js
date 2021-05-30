@@ -1,6 +1,8 @@
 import View from './view'
 import Swiper from '../lib/swiper'
 import SharedTransition from '../lib/shared-transition'
+// 다 가져오는 게 맞는 것일까
+import icons from '../helper/icons'
 import {
   repeat,
   addClass,
@@ -8,7 +10,8 @@ import {
   hasClass,
   addStyle,
   emptyStyle,
-  debounce
+  debounce,
+  prettyTime
 } from '../helper/utils'
 import {
   tmdb
@@ -45,22 +48,10 @@ const template = `
   <div class="nc-preview">
     <div class="nc-preview-inner" ref="preview">
       <div class="nc-preview-thumbnail">
-        <img src="https://image.tmdb.org/t/p/w500/sF19W36JtRIhAm3VciggSkzBtt.jpg" ref="previewSmall">
+        <img src="" ref="previewSmall">
         <img src="" ref="previewLarge">
       </div>
-      <div class="nc-preview-metadata" ref="previewMetadata">
-        <div class="nc-preview-buttons">
-          <div>
-            <button class="play" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M19.376 12.416L8.777 19.482A.5.5 0 0 1 8 19.066V4.934a.5.5 0 0 1 .777-.416l10.599 7.066a.5.5 0 0 1 0 .832z"/></svg></button>
-            <button class="add" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" fill="rgba(255,255,255,1)"/></svg></button>
-            <button class="like" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M14.6 8H21a2 2 0 0 1 2 2v2.104a2 2 0 0 1-.15.762l-3.095 7.515a1 1 0 0 1-.925.619H2a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1h3.482a1 1 0 0 0 .817-.423L11.752.85a.5.5 0 0 1 .632-.159l1.814.907a2.5 2.5 0 0 1 1.305 2.853L14.6 8zM7 10.588V19h11.16L21 12.104V10h-6.4a2 2 0 0 1-1.938-2.493l.903-3.548a.5.5 0 0 0-.261-.571l-.661-.33-4.71 6.672c-.25.354-.57.644-.933.858zM5 11H3v8h2v-8z" fill="rgba(255,255,255,1)"/></svg></button>
-            <button class="unlike" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.4 16H3a2 2 0 0 1-2-2v-2.104a2 2 0 0 1 .15-.762L4.246 3.62A1 1 0 0 1 5.17 3H22a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3.482a1 1 0 0 0-.817.423l-5.453 7.726a.5.5 0 0 1-.632.159L9.802 22.4a2.5 2.5 0 0 1-1.305-2.853L9.4 16zm7.6-2.588V5H5.84L3 11.896V14h6.4a2 2 0 0 1 1.938 2.493l-.903 3.548a.5.5 0 0 0 .261.571l.661.33 4.71-6.672c.25-.354.57-.644.933-.858zM19 13h2V5h-2v8z" fill="rgba(255,255,255,1)"/></svg></button>
-          </div>
-          <div>
-          <button class="details" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z" fill="rgba(255,255,255,1)"/></svg></button>
-          </div>
-        </div>
-      </div>
+      <div class="nc-preview-metadata" ref="previewMetadata"></div>
       <div class="nc-preview-close">
         <button type="button" ref="previewClose"><svg viewBox="0 0 24 24" data-uia="previewModal-closebtn" role="button" aria-label="close" tabindex="0"><path d="M12 10.586l7.293-7.293 1.414 1.414L13.414 12l7.293 7.293-1.414 1.414L12 13.414l-7.293 7.293-1.414-1.414L10.586 12 3.293 4.707l1.414-1.414L12 10.586z" fill="currentColor"></path></svg></button>
       </div>
@@ -210,10 +201,10 @@ class Home extends View {
     })
   }
 
-  _setMiniPreviewPosition (event) {
+  _setMiniPreviewPos (event) {
     const root = document.documentElement
     const fromEl = event.target
-    const toEl = this.$refs.preview
+    const toEl = this.$refs.preview  
     const rect = this._getRect(fromEl)
     const winW = window.innerWidth
     const width = rect.width * 1.5
@@ -225,9 +216,10 @@ class Home extends View {
 
     let left = rect.left - (width - rect.width) / 2
     // 왼쪽/오른쪽 넘치는지 확인
+    // ? 안맞는데? ㅋ
     if (left <= 0) {
       left = rect.left
-    } else if (left + width >= winW) {
+    } else if ((left + width) >= winW) {
       left = rect.right - width
     }
 
@@ -236,20 +228,56 @@ class Home extends View {
       left: 0,
       top: 0,
       width: `${width}px`,
-      height: `${height}px`,
+      // height: `${height}px`,
       transform: `translate(${left}px, ${top}px)`
     })
   }
 
-  async _showMiniPreview (event) {
+  async _setMiniPreviewMeta (event) {
     const fromEl = event.target
-    const toEl = this.$refs.preview
     const id = fromEl.closest('[data-id]').dataset.id
 
-    const results = await tmdb.getMovieDetails(id)
+    const details = await tmdb.getMovieDetails(id)
+    
+    const average = details.vote_average * 10
+    const runtime = details.runtime
+    const releaseDate = details.release_date.replace(/-/g, '. ')
 
+    this.$refs.previewMetadata.insertAdjacentHTML('beforeend', `
+      <div class="nc-preview-buttons">
+        <div>
+          <button class="play" type="button">${icons.play}</button>
+          <button class="add" type="button">${icons.add}</button>
+          <button class="like" type="button">${icons.like}</button>
+          <button class="unlike" type="button">${icons.unlike}</button>
+        </div>
+        <div>
+          <button class="details" type="button">${icons.arrow_down}</button>
+        </div>
+      </div>
+      <div class="nc-preview-info">
+        <span class="average">${average}% 일치</span>
+        <span class="runtime">${runtime}분</span>
+        <span class="date">${releaseDate}</span>
+      </div>
+      <div class="nc-preview-genres">
+        ${(() => {
+          return details.genres.map(tag => {
+            return `<span>${tag.name}</span>`
+          }).join('')
+        })()}
+      </div>
+    `)
+  }
+
+  _showMiniPreview (event) {
+    const fromEl = event.target
+    const toEl = this.$refs.preview    
+
+    // 메타데이타 정보 렌더링
+    this._setMiniPreviewMeta(event)
     // preview 위치 설정
-    this._setMiniPreviewPosition(event)
+    this._setMiniPreviewPos(event)
 
     const sharedTransition = new SharedTransition({
       from: fromEl,
@@ -257,7 +285,7 @@ class Home extends View {
       duration: '.26s'
     })
 
-    const { previewSmall, previewLarge } = this.$refs
+    const { previewSmall, previewLarge, previewMetadata } = this.$refs
     const smallSrc = fromEl.getAttribute('src')
     const largeSrc = smallSrc.replace('w500', 'original')
 
@@ -273,12 +301,13 @@ class Home extends View {
       previewLarge.src = largeSrc
     }
 
-    const beforeReverseStart = () => {}
+    const beforeReverseStart = () => {
+      removeClass(toEl.parentNode, 'mini-expanded')
+    }
     const afterReverseEnd = () => {
       previewSmall.src = ''
       previewLarge.src = ''
-
-      removeClass(toEl.parentNode, 'mini-expanded')
+      previewMetadata.innerHTML = ''
     }
 
     sharedTransition.on('beforePlayStart', beforePlayStart)

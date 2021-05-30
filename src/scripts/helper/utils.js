@@ -103,3 +103,15 @@ export function removeClass (element, value) {
 export function hasClass (element, value) {
   return element.classList.contains(value)
 }
+
+export function zeroFill (n) {
+  return ('0' + n).slice(-2)
+}
+
+export function prettyTime (t) {
+  const hours = zeroFill(Math.floor(t / 3600))
+  const minutes = zeroFill(Math.floor(t % 3600 / 60))
+  const second = zeroFill(Math.floor(t % 3600 % 60))
+
+  return `${hours}:${minutes}:${second}`
+}

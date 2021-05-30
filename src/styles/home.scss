@@ -108,8 +108,33 @@
   z-index: 999;
   left: 0;
   top: 0;
-  
   pointer-events: none;
+  &.expanded {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 56px 0;
+    pointer-events: auto;
+    .nc-preview-inner {
+      opacity: 1;
+    }
+    .nc-preview-close {
+      display: block;
+    }
+    .nc-preview-thumbnail {
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to top, #2a2828, transparent 50%);
+      }
+    }
+  }
+
   &.mini-expanded {
     position: absolute;
     pointer-events: auto;
@@ -122,28 +147,20 @@
         background: none;
       }
     }
-    .nc-preview-close {
-      display: none;
-    }
-  }
-  &.expanded {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    padding: 56px 0;
-    pointer-events: auto;
-    .nc-preview-inner {
+    .nc-preview-metadata {
       opacity: 1;
     }
-  }
+    .nc-preview-close {
+      display: none;
+    }    
+  }  
 }
 
 .nc-preview-inner {
   width: 90%;
   overflow: hidden;
   max-width: 1024px;
-  border-radius: 4px;  
+  border-radius: 4px;
   transform-origin: center top;
   will-change: transform;
   opacity: 0;
@@ -160,16 +177,6 @@
     padding-bottom: 56.25%
   }
 
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to top, #2a2828, transparent 50%);
-  }
-
   img {
     position: absolute;
     left: 0;
@@ -181,7 +188,9 @@
 }
 
 .nc-preview-metadata {
-  padding: 12px;
+  opacity: 0;
+  transition: .2s;
+  padding: 14px;
   background-color: var(--secondary-background-color);
 }
 
@@ -213,7 +222,29 @@
   }
 }
 
+.nc-preview-info {  
+  margin: 14px 0 12px 0;
+  .average {
+    font-weight: 700;
+    color: #46d369;
+  }
+}
+
+.nc-preview-genres {
+  font-size: 14px;
+  color: #e6e6e6;
+  > span {
+    &:not(:first-child)::before {
+      content: "\2022";
+      font-size: 16px;
+      color: #646464;
+      padding:0 12px;
+    }
+  }
+}
+
 .nc-preview-close {
+  display: none;
   position: absolute;
   top: 0;
   right: 0;
