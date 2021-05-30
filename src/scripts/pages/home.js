@@ -3,6 +3,11 @@ import Swiper from '../lib/swiper'
 import SharedTransition from '../lib/shared-transition'
 import {
   repeat,
+  addClass,
+  removeClass,
+  hasClass,
+  addStyle,
+  emptyStyle,
   debounce
 } from '../helper/utils'
 import {
@@ -10,7 +15,7 @@ import {
 } from '../services/api'
 
 const template = `
-  <div class="nc-tracks">
+  <div class="nc-tracks" ref="tracks">
     ${(() => {
       const tracks = [
         { key: 'trending',title: '지금 뜨는 콘텐츠' },
@@ -40,10 +45,22 @@ const template = `
   <div class="nc-preview">
     <div class="nc-preview-inner" ref="preview">
       <div class="nc-preview-thumbnail">
-        <img src="" ref="small">
-        <img src="" ref="large">
+        <img src="https://image.tmdb.org/t/p/w500/sF19W36JtRIhAm3VciggSkzBtt.jpg" ref="previewSmall">
+        <img src="" ref="previewLarge">
       </div>
-      <div class="nc-preview-metadata" ref="metadata"></div>
+      <div class="nc-preview-metadata" ref="previewMetadata">
+        <div class="nc-preview-buttons">
+          <div>
+            <button class="play" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M19.376 12.416L8.777 19.482A.5.5 0 0 1 8 19.066V4.934a.5.5 0 0 1 .777-.416l10.599 7.066a.5.5 0 0 1 0 .832z"/></svg></button>
+            <button class="add" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" fill="rgba(255,255,255,1)"/></svg></button>
+            <button class="like" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M14.6 8H21a2 2 0 0 1 2 2v2.104a2 2 0 0 1-.15.762l-3.095 7.515a1 1 0 0 1-.925.619H2a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1h3.482a1 1 0 0 0 .817-.423L11.752.85a.5.5 0 0 1 .632-.159l1.814.907a2.5 2.5 0 0 1 1.305 2.853L14.6 8zM7 10.588V19h11.16L21 12.104V10h-6.4a2 2 0 0 1-1.938-2.493l.903-3.548a.5.5 0 0 0-.261-.571l-.661-.33-4.71 6.672c-.25.354-.57.644-.933.858zM5 11H3v8h2v-8z" fill="rgba(255,255,255,1)"/></svg></button>
+            <button class="unlike" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.4 16H3a2 2 0 0 1-2-2v-2.104a2 2 0 0 1 .15-.762L4.246 3.62A1 1 0 0 1 5.17 3H22a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3.482a1 1 0 0 0-.817.423l-5.453 7.726a.5.5 0 0 1-.632.159L9.802 22.4a2.5 2.5 0 0 1-1.305-2.853L9.4 16zm7.6-2.588V5H5.84L3 11.896V14h6.4a2 2 0 0 1 1.938 2.493l-.903 3.548a.5.5 0 0 0 .261.571l.661.33 4.71-6.672c.25-.354.57-.644.933-.858zM19 13h2V5h-2v8z" fill="rgba(255,255,255,1)"/></svg></button>
+          </div>
+          <div>
+          <button class="details" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z" fill="rgba(255,255,255,1)"/></svg></button>
+          </div>
+        </div>
+      </div>
       <div class="nc-preview-close">
         <button type="button" ref="previewClose"><svg viewBox="0 0 24 24" data-uia="previewModal-closebtn" role="button" aria-label="close" tabindex="0"><path d="M12 10.586l7.293-7.293 1.414 1.414L13.414 12l7.293 7.293-1.414 1.414L12 13.414l-7.293 7.293-1.414-1.414L10.586 12 3.293 4.707l1.414-1.414L12 10.586z" fill="currentColor"></path></svg></button>
       </div>
@@ -143,7 +160,7 @@ class Home extends View {
         const isLast = i === length - 1
         requestAnimationFrame(() => {
           elem.insertAdjacentHTML('beforeend', `
-            <div class="nc-swiper-slide">
+            <div class="nc-swiper-slide" data-id="${data.id}">
               <a href="/">
                 <div class="thumbnail">
                   <img data-src="${tmdb.IMG_URL + data.backdrop_path}">
@@ -176,48 +193,103 @@ class Home extends View {
         })
       )
 
+      let interval = 400
+      let timer = 0
       images.forEach(image => {
-        // image.addEventListener('click', this._showPreview.bind(this))
-
-        image.addEventListener('mouseenter', this._showMiniPreview.bind(this))
-
-        // image.addEventListener('mouseleave', this._hideMiniPreview.bind(this))
+        image.addEventListener('mouseenter', (event) => {
+          timer = setTimeout(() => {
+            this._showMiniPreview(event)
+          }, interval)
+        })
+        image.addEventListener('mouseleave', (event) => {
+          clearTimeout(timer)
+        })
       })
 
       resolve()
     })
   }
 
-  _setMiniPreviewPos (event) {
+  _setMiniPreviewPosition (event) {
+    const root = document.documentElement
     const fromEl = event.target
     const toEl = this.$refs.preview
-    const scale = 1.5
-    const { width,  height, left, top } = this._getRect(fromEl)
+    const rect = this._getRect(fromEl)
+    const winW = window.innerWidth
+    const width = rect.width * 1.5
+    const height = rect.height * 1.5
 
-    const _width = width * scale
-    const _height = height * scale
-    const _left = left - (_width - width) / 2
-    const _top = top - (_height - height) / 2
+    let top = rect.top - (height - rect.height) / 2
+    // absolute라 스크롤 값 더 해줌
+    top = top + root.scrollTop
 
-    Object.assign(toEl.style, {
-      position: 'fixed',
+    let left = rect.left - (width - rect.width) / 2
+    // 왼쪽/오른쪽 넘치는지 확인
+    if (left <= 0) {
+      left = rect.left
+    } else if (left + width >= winW) {
+      left = rect.right - width
+    }
+
+    addStyle(toEl, {
+      position: 'absolute',
       left: 0,
       top: 0,
-      width: `${_width}px`,
-      height: `${_height}px`,
-      transform: `translate(${_left}px, ${_top}px)`
+      width: `${width}px`,
+      height: `${height}px`,
+      transform: `translate(${left}px, ${top}px)`
     })
   }
 
-  _showMiniPreview (event) {
+  async _showMiniPreview (event) {
     const fromEl = event.target
     const toEl = this.$refs.preview
+    const id = fromEl.closest('[data-id]').dataset.id
 
-    // 위치 설정
-    this._setMiniPreviewPos(event)
+    const results = await tmdb.getMovieDetails(id)
+
+    // preview 위치 설정
+    this._setMiniPreviewPosition(event)
+
+    const sharedTransition = new SharedTransition({
+      from: fromEl,
+      to: toEl,
+      duration: '.26s'
+    })
+
+    const { previewSmall, previewLarge } = this.$refs
+    const smallSrc = fromEl.getAttribute('src')
+    const largeSrc = smallSrc.replace('w500', 'original')
+
+    const beforePlayStart = () => {
+      addClass(toEl.parentNode, 'mini-expanded')
+      previewSmall.src = smallSrc
+
+      toEl.addEventListener('mouseleave', () => {
+        sharedTransition.reverse()
+      }, { once: true })
+    }
+    const afterPlayEnd = () => {
+      previewLarge.src = largeSrc
+    }
+
+    const beforeReverseStart = () => {}
+    const afterReverseEnd = () => {
+      previewSmall.src = ''
+      previewLarge.src = ''
+
+      removeClass(toEl.parentNode, 'mini-expanded')
+    }
+
+    sharedTransition.on('beforePlayStart', beforePlayStart)
+    sharedTransition.on('afterPlayEnd', afterPlayEnd)
+    sharedTransition.on('beforeReverseStart', beforeReverseStart)
+    sharedTransition.on('afterReverseEnd', afterReverseEnd)
+    sharedTransition.play()
   }
 
   _showPreview (event) {
+    const root = document.documentElement
     const fromEl = event.target
     const toEl = this.$refs.preview
     const imgSmallSrc = fromEl.getAttribute('src')
@@ -228,15 +300,25 @@ class Home extends View {
       to: toEl
     })
 
+    const { tracks, previewSmall, previewLarge } = this.$refs
+
+    const scrollTop = root.scrollTop
+
     hero.on('beforePlayStart', () => {
+      addStyle(tracks, {
+        position: 'fixed',
+        top: `${-scrollTop}px`,
+        paddingTop: '68px'
+      })
+
+      addClass(toEl.parentNode, 'expanded')
+
       // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
-      this.$refs.small.src = imgSmallSrc
+      previewSmall.src = imgSmallSrc
     })
     hero.on('afterPlayEnd', () => {
-      toEl.parentNode.classList.add('expanded')
-
       // 애니메이션 완료 후 큰 이미지 로드
-      this.$refs.large.src = imgLargeSrc
+      previewLarge.src = imgLargeSrc
 
       // test
       this.$refs.previewClose.addEventListener('click', () => {
@@ -244,110 +326,20 @@ class Home extends View {
       }, { once: true })
     })
 
-    hero.on('beforeReverseEnd', () => {
-      
+    hero.on('beforeReverseStart', () => {
+
     })
 
     hero.on('afterReverseEnd', () => {
-      toEl.parentNode.classList.remove('expanded')
-      this.$refs.small.src = ''
-      this.$refs.large.src = ''
+      emptyStyle(tracks)
+      root.scrollTop = scrollTop
+      removeClass(toEl.parentNode, 'expanded')
+
+      previewSmall.src = ''
+      previewLarge.src = ''
     })
 
     hero.play()
-
-    // clearTimeout(this._previewTimer)
-    // this._previewTimer = setTimeout(() => {
-    //   const fromElem = event.target
-    //   const toElem = this.$refs.preview
-    //   const fromPoint = this._getRect(fromElem)
-    //   const toPoint = (() => {
-    //     const root = document.documentElement
-    //     const width = fromPoint.width * 1.5
-    //     const height = fromPoint.height * 1.5
-    //     const top = fromPoint.top - ((height - fromPoint.height) / 2) + root.scrollTop
-    //     let left = fromPoint.left - ((width - fromPoint.width) / 2)
-    //     if (left <= 0) {
-    //       left = fromPoint.left
-    //     } else if ((left + width) >= root.clientWidth) {
-    //       left = fromPoint.right - width
-    //     }
-
-    //     return {
-    //       width,
-    //       height,
-    //       left,
-    //       top
-    //     }
-    //   })()
-
-    //   const hero = new SharedTransition({
-    //     from: fromElem,
-    //     to: toElem,
-    //     points: {
-    //       from: fromPoint,
-    //       to: toPoint
-    //     }
-    //   })
-
-    //   const imgSmallSrc = fromElem.getAttribute('src')
-    //   const imgLargeSrc = imgSmallSrc.replace('w500', 'original')      
-    //   this.$refs.small.src = imgSmallSrc
-    //   this.$refs.large.src = imgLargeSrc
-
-    //   hero.animate({
-
-    //   })
-    // }, 500)
-
-    // setTimeout(() => {
-    //   fromElem.style.transition = `transform .24s`
-    //   fromElem.style.transform = `scale(1.5)`
-    //   fromElem.addEventListener('transitionend', () => {
-    //     const toRect = fromElem.getBoundingClientRect()
-    //     const toWdith = toRect.width
-    //     const toHeight = toRect.height
-    //     const toLeft = toRect.left
-    //     const toTop = toRect.top + window.scrollY
-    //     fromElem.style.cssText = `
-    //       display: block;
-    //       width: ${toWdith}px;
-    //       height: ${toHeight}px;
-    //       left: ${toLeft}px;
-    //       top: ${toTop}px;
-    //       transition: none;
-    //       transform: none;
-    //     `
-    //   }, { once: true })
-
-    //   fromElem.addEventListener('mouseleave', this._hideMiniPreview.bind(this), { once: true })
-    // }, 1)
-
-    // const from = target.getBoundingClientRect()
-    // const imgSmallSrc = target.getAttribute('src')
-    // const imgLargeSrc = imgSmallSrc.replace('w500', 'original')
-
-    // this.$refs.small.src = imgSmallSrc
-    // this.$refs.large.src = imgLargeSrc
-
-    // setTimeout(() => {
-    //   this.$refs.preview.style.transform = `scale(1.5)`
-
-    //   this.$refs.preview.addEventListener('transitionend', () => {
-    //     const to = this.$refs.preview.getBoundingClientRect()
-
-    //     this.$refs.preview.style.cssText = `
-    //       display: block;
-    //       width: ${to.width}px;
-    //       height: ${to.height}px;
-    //       left: ${to.left}px;
-    //       top: ${to.top + window.scrollY}px;
-    //       transition: none;
-    //       transform: none;
-    //     `
-
-    //   }, { once: true })
-    // }, 250)
   }
 
   _getRect (elem) {
@@ -355,14 +347,18 @@ class Home extends View {
       width,
       height,
       left,
-      top
+      top,
+      right,
+      bottom
     } = elem.getBoundingClientRect()
 
     return {
       width,
       height,
       left,
-      top
+      top,
+      right,
+      bottom
     }
   }
 

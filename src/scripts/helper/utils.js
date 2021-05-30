@@ -2,6 +2,10 @@ export function isFunction (value) {
   return typeof value === 'function'
 }
 
+export function isNumber (value) {
+  return typeof value === 'number' && !isNaN(value)
+}
+
 export function randomItem (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -46,4 +50,56 @@ export function throttle (fn, delay) {
       fn(e);
     }
   };
+}
+
+export function addStyle (element, value) {
+  if (isNumber(element.length)) {
+    Array.from(element).forEach(
+      elem => addStyle(elem.style, value)
+    )
+
+    return
+  }
+
+  Object.assign(element.style, value)
+}
+
+export function emptyStyle (element) {
+  if (isNumber(element.length)) {
+    Array.from(element).forEach(
+      elem => emptyStyle(elem)
+    )
+
+    return
+  }
+
+  element.setAttribute('style', '')
+}
+
+export function addClass (element, value) {
+  if (isNumber(element.length)) {
+    Array.from(element).forEach(
+      elem => addClass(elem, value)
+    )
+
+    return
+  }
+
+  element.classList.add(value)
+}
+
+export function removeClass (element, value) {
+  if (isNumber(element.length)) {
+    Array.from(element).forEach(
+      elem => removeClass(elem, value)
+    )
+
+    return
+  }
+
+  element.classList.remove(value)
+}
+
+export function hasClass (element, value) {
+  return element.classList.contains(value)
 }
