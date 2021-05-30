@@ -49,8 +49,10 @@
       width: 50%;
     }
     > a {
-      position: relative;
       display: block;
+    }
+    .thumbnail {
+      position: relative;
       border-radius: 4px;
       overflow: hidden;
       &::before {

@@ -11,54 +11,31 @@ import {
 
 const template = `
   <div class="nc-tracks">
-    <div class="nc-track">
-      <h2 class="nc-title">지금 뜨는 콘텐츠</h2>
-      <div class="nc-inner">
-        <div class="nc-swiper-container">
-          <div class="nc-swiper-prev"></div>
-          <div class="nc-swiper-wrapper" ref="trending">
-            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
+    ${(() => {
+      const tracks = [
+        { key: 'trending',title: '지금 뜨는 콘텐츠' },
+        { key: 'animation', title: '애니메이션' },
+        { key: 'romance', title: '로맨스' },
+        { key: 'comedy', title: '코메디' }
+      ]
+
+      return tracks.map(track => {
+        return `
+          <div class="nc-track">
+            <h2 class="nc-title">${track.title}</h2>
+            <div class="nc-inner">
+              <div class="nc-swiper-container">
+                <div class="nc-swiper-prev"></div>
+                <div class="nc-swiper-wrapper" ref="${track.key}">
+                  ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="thumbnail"></div><div class="metadata">&nbsp;</div></a></div>', 12)}
+                </div>
+                <div class="nc-swiper-next"></div>
+              </div>
+            </div>
           </div>
-          <div class="nc-swiper-next"></div>
-        </div>
-      </div>
-    </div>
-    <div class="nc-track">
-      <h2 class="nc-title">애니메이션</h2>
-      <div class="nc-inner">
-        <div class="nc-swiper-container">
-          <div class="nc-swiper-prev"></div>
-          <div class="nc-swiper-wrapper" ref="animation">
-            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
-          </div>
-          <div class="nc-swiper-next"></div>
-        </div>
-      </div>
-    </div>
-    <div class="nc-track">
-      <h2 class="nc-title">로맨스</h2>
-      <div class="nc-inner">
-        <div class="nc-swiper-container">
-          <div class="nc-swiper-prev"></div>
-          <div class="nc-swiper-wrapper" ref="romance">
-            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
-          </div>
-          <div class="nc-swiper-next"></div>
-        </div>
-      </div>
-    </div>
-    <div class="nc-track">
-      <h2 class="nc-title">코메디</h2>
-      <div class="nc-inner">
-        <div class="nc-swiper-container">
-          <div class="nc-swiper-prev"></div>
-          <div class="nc-swiper-wrapper" ref="comedy">
-            ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="metadata">&nbsp;</div></a></div>', 12)}
-          </div>
-          <div class="nc-swiper-next"></div>
-        </div>
-      </div>
-    </div>
+        `
+      }).join('')
+    })()}
   </div>
   <div class="nc-preview">
     <div class="nc-preview-inner" ref="preview">
@@ -200,12 +177,44 @@ class Home extends View {
       )
 
       images.forEach(image => {
-        image.addEventListener('click', this._showPreview.bind(this))
+        // image.addEventListener('click', this._showPreview.bind(this))
+
+        image.addEventListener('mouseenter', this._showMiniPreview.bind(this))
+
         // image.addEventListener('mouseleave', this._hideMiniPreview.bind(this))
       })
 
       resolve()
     })
+  }
+
+  _setMiniPreviewPos (event) {
+    const fromEl = event.target
+    const toEl = this.$refs.preview
+    const scale = 1.5
+    const { width,  height, left, top } = this._getRect(fromEl)
+
+    const _width = width * scale
+    const _height = height * scale
+    const _left = left - (_width - width) / 2
+    const _top = top - (_height - height) / 2
+
+    Object.assign(toEl.style, {
+      position: 'fixed',
+      left: 0,
+      top: 0,
+      width: `${_width}px`,
+      height: `${_height}px`,
+      transform: `translate(${_left}px, ${_top}px)`
+    })
+  }
+
+  _showMiniPreview (event) {
+    const fromEl = event.target
+    const toEl = this.$refs.preview
+
+    // 위치 설정
+    this._setMiniPreviewPos(event)
   }
 
   _showPreview (event) {
@@ -224,10 +233,10 @@ class Home extends View {
       this.$refs.small.src = imgSmallSrc
     })
     hero.on('afterPlayEnd', () => {
+      toEl.parentNode.classList.add('expanded')
+
       // 애니메이션 완료 후 큰 이미지 로드
       this.$refs.large.src = imgLargeSrc
-
-      toEl.parentNode.classList.add('expanded')
 
       // test
       this.$refs.previewClose.addEventListener('click', () => {
