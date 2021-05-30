@@ -288,59 +288,59 @@ class Home extends View {
     sharedTransition.play()
   }
 
-  _showPreview (event) {
-    const root = document.documentElement
-    const fromEl = event.target
-    const toEl = this.$refs.preview
-    const imgSmallSrc = fromEl.getAttribute('src')
-    const imgLargeSrc = imgSmallSrc.replace('w500', 'original')
+  // _showPreview (event) {
+  //   const root = document.documentElement
+  //   const fromEl = event.target
+  //   const toEl = this.$refs.preview
+  //   const imgSmallSrc = fromEl.getAttribute('src')
+  //   const imgLargeSrc = imgSmallSrc.replace('w500', 'original')
 
-    const hero = new SharedTransition({
-      from: fromEl,
-      to: toEl
-    })
+  //   const hero = new SharedTransition({
+  //     from: fromEl,
+  //     to: toEl
+  //   })
 
-    const { tracks, previewSmall, previewLarge } = this.$refs
+  //   const { tracks, previewSmall, previewLarge } = this.$refs
 
-    const scrollTop = root.scrollTop
+  //   const scrollTop = root.scrollTop
 
-    hero.on('beforePlayStart', () => {
-      addStyle(tracks, {
-        position: 'fixed',
-        top: `${-scrollTop}px`,
-        paddingTop: '68px'
-      })
+  //   hero.on('beforePlayStart', () => {
+  //     addStyle(tracks, {
+  //       position: 'fixed',
+  //       top: `${-scrollTop}px`,
+  //       paddingTop: '68px'
+  //     })
 
-      addClass(toEl.parentNode, 'expanded')
+  //     addClass(toEl.parentNode, 'expanded')
 
-      // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
-      previewSmall.src = imgSmallSrc
-    })
-    hero.on('afterPlayEnd', () => {
-      // 애니메이션 완료 후 큰 이미지 로드
-      previewLarge.src = imgLargeSrc
+  //     // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
+  //     previewSmall.src = imgSmallSrc
+  //   })
+  //   hero.on('afterPlayEnd', () => {
+  //     // 애니메이션 완료 후 큰 이미지 로드
+  //     previewLarge.src = imgLargeSrc
 
-      // test
-      this.$refs.previewClose.addEventListener('click', () => {
-        hero.reverse()
-      }, { once: true })
-    })
+  //     // test
+  //     this.$refs.previewClose.addEventListener('click', () => {
+  //       hero.reverse()
+  //     }, { once: true })
+  //   })
 
-    hero.on('beforeReverseStart', () => {
+  //   hero.on('beforeReverseStart', () => {
 
-    })
+  //   })
 
-    hero.on('afterReverseEnd', () => {
-      emptyStyle(tracks)
-      root.scrollTop = scrollTop
-      removeClass(toEl.parentNode, 'expanded')
+  //   hero.on('afterReverseEnd', () => {
+  //     emptyStyle(tracks)
+  //     root.scrollTop = scrollTop
+  //     removeClass(toEl.parentNode, 'expanded')
 
-      previewSmall.src = ''
-      previewLarge.src = ''
-    })
+  //     previewSmall.src = ''
+  //     previewLarge.src = ''
+  //   })
 
-    hero.play()
-  }
+  //   hero.play()
+  // }
 
   _getRect (elem) {
     const {
