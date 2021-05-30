@@ -222,11 +222,15 @@
   }
 }
 
-.nc-preview-info {  
+.nc-preview-info {
   margin: 14px 0 12px 0;
+  color: #b3b3b3;
+  font-weight: 700;
   .average {
-    font-weight: 700;
     color: #46d369;
+  }
+  > span {
+    padding: 0 2px;
   }
 }
 

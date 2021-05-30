@@ -238,10 +238,10 @@ class Home extends View {
     const id = fromEl.closest('[data-id]').dataset.id
 
     const details = await tmdb.getMovieDetails(id)
-    
     const average = details.vote_average * 10
     const runtime = details.runtime
     const releaseDate = details.release_date.replace(/-/g, '. ')
+    const genres = details.genres.slice(0, 3)
 
     this.$refs.previewMetadata.insertAdjacentHTML('beforeend', `
       <div class="nc-preview-buttons">
@@ -262,7 +262,7 @@ class Home extends View {
       </div>
       <div class="nc-preview-genres">
         ${(() => {
-          return details.genres.map(tag => {
+          return genres.map(tag => {
             return `<span>${tag.name}</span>`
           }).join('')
         })()}
@@ -274,7 +274,7 @@ class Home extends View {
     const fromEl = event.target
     const toEl = this.$refs.preview    
 
-    // 메타데이타 정보 렌더링
+    // 메타데이타 정보 설정
     this._setMiniPreviewMeta(event)
     // preview 위치 설정
     this._setMiniPreviewPos(event)
@@ -291,6 +291,7 @@ class Home extends View {
 
     const beforePlayStart = () => {
       addClass(toEl.parentNode, 'mini-expanded')
+      
       previewSmall.src = smallSrc
 
       toEl.addEventListener('mouseleave', () => {
