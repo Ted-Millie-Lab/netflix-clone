@@ -22,7 +22,7 @@
 
 .nc-track {
   position: relative;
-  margin: 48px 0;
+  margin: 24px 0;
   overflow: hidden;
   h2 {
     font-size: 36px;
@@ -193,7 +193,7 @@
 .nc-preview-metadata {
   opacity: 0;
   transition: .26s;
-  padding: 20px 14px 16px;
+  padding: 24px 16px 16px;
   background-color: var(--secondary-background-color);
 }
 
@@ -263,5 +263,22 @@
     border-radius: 50%;
     color: #fff;
     background-color: var(--secondary-background-color);
+  }
+}
+
+.nc-preview-video {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transition: .24s;
+  opacity: 0;
+  pointer-events: none;
+
+  &.is-active {
+    z-index: 1;
+    opacity: 1;
   }
 }

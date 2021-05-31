@@ -50,6 +50,9 @@ const template = `
       <div class="nc-preview-thumbnail">
         <img src="" ref="previewSmall">
         <img src="" ref="previewLarge">
+        <div class="nc-preview-video" ref="previewVideo">
+          <div id="player"></div>
+        </div>
       </div>
       <div class="nc-preview-metadata" ref="previewMetadata"></div>
       <div class="nc-preview-close">
@@ -269,6 +272,94 @@ class Home extends View {
     `)
   }
 
+  // https://developers.google.com/youtube/iframe_api_reference?hl=ko
+  _loadYouTubeScript () {
+    return new Promise((resolve, reject) => {
+      // Load the IFrame Player API code asynchronously.
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      const tag = document.createElement('script')
+      tag.onload = () => window.YT.ready(resolve)
+      tag.onerror = reject
+      tag.src = 'https://www.youtube.com/player_api'
+
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    })
+  }
+
+  // https://developers.google.com/youtube/iframe_api_reference?hl=ko
+  async _onYouTubeVideoLoad (videos) {
+    const { results } = videos
+    if (!results.length) {
+      return
+    }
+
+    const video = results.find(v => v.type === 'Trailer' || v.type === 'Teaser')
+    if (!video) {
+      return
+    }
+
+    if (!window.YT) {
+      await this._loadYouTubeScript()
+    }
+
+    const { previewVideo } = this.DOM
+
+    const player = new window.YT.Player('player', {
+      width: '100%',
+      height: '100%',
+      videoId: video.key,
+      // https://developers.google.com/youtube/player_parameters.html?playerVersion=HTML5&hl=ko
+      playerVars: {
+        autoplay: 1,
+        mute: 1,
+        autohide: 1,
+        modestbranding: 1,
+        rel: 0,
+        showinfo: 0,
+        controls: 0,
+        disablekb: 1,
+        enablejsapi: 1,
+        iv_load_policy: 3
+      },
+      events: {
+        onReady: (event) => {
+          event.target.playVideo()
+        },
+        onStateChange: (event) => {
+          // YT.PlayerState = {
+            // BUFFERING: 3
+            // CUED: 5
+            // ENDED: 0
+            // PAUSED: 2
+            // PLAYING: 1
+            // UNSTARTED: -1
+          // }
+
+          if (event.data == YT.PlayerState.PLAYING) {
+            addClass(previewVideo, 'is-active')
+          }
+
+          if (event.data === YT.PlayerState.UNSTARTED) {
+            removeClass(previewVideo, 'is-active')
+          }
+        }
+      }
+    })
+
+    let youtubeTimer = 0
+    youtubeTimer = setInterval(() => {
+      if (player.getCurrentTime) {
+        const currentTime = player.getCurrentTime()
+        const duration = player.getDuration()
+        if (currentTime >= (duration - 1)) {
+          removeClass(previewVideo, 'is-active')
+
+          clearInterval(youtubeTimer)
+        }
+      }
+    }, 100)
+  }
+
   async _showMiniPreview (event) {
     const fromEl = event.target
     const toEl = this.DOM.preview
@@ -286,7 +377,7 @@ class Home extends View {
       duration: '.26s'
     })
 
-    const { previewSmall, previewLarge, previewMetadata } = this.DOM
+    const { previewSmall, previewLarge, previewMetadata, previewVideo } = this.DOM
     const smallSrc = fromEl.getAttribute('src')
     const largeSrc = smallSrc.replace('w500', 'original')
 
@@ -300,16 +391,22 @@ class Home extends View {
       }, { once: true })
     }
     const afterPlayEnd = () => {
+      // 원본 이미지 로드
       previewLarge.src = largeSrc
+
+      // 비디오 로드
+      this._onYouTubeVideoLoad(details.videos)
     }
 
     const beforeReverseStart = () => {
       removeClass(toEl.parentNode, 'mini-expanded')
+      removeClass(previewVideo, 'is-active')
     }
     const afterReverseEnd = () => {
       previewSmall.src = ''
       previewLarge.src = ''
       previewMetadata.innerHTML = ''
+      previewVideo.innerHTML = '<div id="player"></div>'
     }
 
     sharedTransition.on('beforePlayStart', beforePlayStart)

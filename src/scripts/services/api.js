@@ -29,7 +29,7 @@ export const tmdb = {
 
   // https://developers.themoviedb.org/3/movies/get-movie-details
   getMovieDetails (id) {
-    return _fetch(`/movie/${id}`, 'append_to_response=similar')
+    return _fetch(`/movie/${id}`, 'append_to_response=similar,videos')
   },
 
   // https://developers.themoviedb.org/3/movies/get-popular-movies
