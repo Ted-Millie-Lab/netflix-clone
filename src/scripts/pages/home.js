@@ -357,7 +357,7 @@ class Home extends View {
         if (currentTime >= (duration - 1)) {
           removeClass(previewVideo, 'is-active')
 
-          clearInterval(youtubeTimer)
+          clearInterval(this._youtubeTimer)
         }
       }
     }, 100)
@@ -389,9 +389,9 @@ class Home extends View {
 
       addClass(toEl.parentNode, 'mini-expanded')
 
-      // toEl.addEventListener('mouseleave', () => {
-      //   sharedTransition.reverse()
-      // }, { once: true })
+      toEl.addEventListener('mouseleave', () => {
+        sharedTransition.reverse()
+      }, { once: true })
     }
     const afterPlayEnd = () => {
       // 원본 이미지 로드
