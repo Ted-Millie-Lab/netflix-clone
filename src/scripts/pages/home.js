@@ -108,32 +108,32 @@ class Home extends View {
   }
 
   _renderSwipeTrending () {
-    const trending = this.$refs.trending
-    this.observer(trending, () => {
+    const trending = this.DOM.trending
+    this.intersectionObserver(trending, () => {
       tmdb.getTrending()
         .then(({ results }) => this._renderSwipe(trending, results))
     })
   }  
 
   _renderSwipeAnimation () {
-    const animation = this.$refs.animation
-    this.observer(animation, () => {
+    const animation = this.DOM.animation
+    this.intersectionObserver(animation, () => {
       tmdb.getPopularGenre(16)
         .then(({ results }) => this._renderSwipe(animation, results))
     })
   }
 
   _renderSwipeRomance () {
-    const romance = this.$refs.romance
-    this.observer(romance, () => {
+    const romance = this.DOM.romance
+    this.intersectionObserver(romance, () => {
       tmdb.getPopularGenre(10749)
         .then(({ results }) => this._renderSwipe(romance, results))
     })
   }
 
   _renderSwipeComedy () {
-    const comedy = this.$refs.comedy
-    this.observer(comedy, () => {
+    const comedy = this.DOM.comedy
+    this.intersectionObserver(comedy, () => {
       tmdb.getPopularGenre(35)
         .then(({ results }) => this._renderSwipe(comedy, results))
     })
@@ -208,22 +208,22 @@ class Home extends View {
   _setMiniPreviewPos (event) {
     const root = document.documentElement
     const fromEl = event.target
-    const toEl = this.$refs.preview
-    const metaEl = this.$refs.previewMetadata
-    const rect = this._getRect(fromEl)
+    const toEl = this.DOM.preview
+    const metaEl = this.DOM.previewMetadata
+    const bounds = this._getRect(fromEl)
     const winW = window.innerWidth
-    const width = rect.width * 1.5
-    let height = rect.height * 1.5
+    const width = bounds.width * 1.5
+    let height = bounds.height * 1.5
     height = height + metaEl.clientHeight
 
-    let top = rect.top - (height - rect.height) / 2
+    let top = bounds.top - (height - bounds.height) / 2
     top = top + root.scrollTop
 
-    let left = rect.left - (width - rect.width) / 2
+    let left = bounds.left - (width - bounds.width) / 2
     if (left <= 0) {
-      left = rect.left
+      left = bounds.left
     } else if ((left + width) >= winW) {
-      left = rect.right - width
+      left = bounds.right - width
     }
 
     addStyle(toEl, {
@@ -236,21 +236,21 @@ class Home extends View {
     })
   }
 
-  _setMiniPreviewMeta (data) {
-    const average = data.vote_average * 10
-    const runtime = data.runtime
-    const releaseDate = data.release_date.replace(/-/g, '. ')
-    const genres = data.genres.slice(0, 3)
+  _setMiniPreviewMeta (details) {
+    const average = details.vote_average * 10
+    const runtime = details.runtime
+    const releaseDate = details.release_date.replace(/-/g, '. ')
+    const genres = details.genres.slice(0, 3)
 
-    this.$refs.previewMetadata.insertAdjacentHTML('beforeend', `
+    this.DOM.previewMetadata.insertAdjacentHTML('beforeend', `
       <div class="nc-preview-buttons">
-        <div>
+        <div class="left">
           <button class="play" type="button">${icons.play}</button>
           <button class="add" type="button">${icons.add}</button>
           <button class="like" type="button">${icons.like}</button>
           <button class="unlike" type="button">${icons.unlike}</button>
         </div>
-        <div>
+        <div class="right">
           <button class="details" type="button">${icons.arrow_down}</button>
         </div>
       </div>
@@ -271,12 +271,12 @@ class Home extends View {
 
   async _showMiniPreview (event) {
     const fromEl = event.target
-    const toEl = this.$refs.preview
+    const toEl = this.DOM.preview
     const id = fromEl.closest('[data-id]').dataset.id
-    const data = await tmdb.getMovieDetails(id)
+    const details = await tmdb.getMovieDetails(id)
 
     // 메타데이타 정보 설정
-    this._setMiniPreviewMeta(data)
+    this._setMiniPreviewMeta(details)
     // preview 위치 설정
     this._setMiniPreviewPos(event)
 
@@ -286,14 +286,14 @@ class Home extends View {
       duration: '.26s'
     })
 
-    const { previewSmall, previewLarge, previewMetadata } = this.$refs
+    const { previewSmall, previewLarge, previewMetadata } = this.DOM
     const smallSrc = fromEl.getAttribute('src')
     const largeSrc = smallSrc.replace('w500', 'original')
 
     const beforePlayStart = () => {
-      addClass(toEl.parentNode, 'mini-expanded')
-
       previewSmall.src = smallSrc
+
+      addClass(toEl.parentNode, 'mini-expanded')
 
       toEl.addEventListener('mouseleave', () => {
         sharedTransition.reverse()
@@ -322,7 +322,7 @@ class Home extends View {
   // _showPreview (event) {
   //   const root = document.documentElement
   //   const fromEl = event.target
-  //   const toEl = this.$refs.preview
+  //   const toEl = this.DOM.preview
   //   const imgSmallSrc = fromEl.getAttribute('src')
   //   const imgLargeSrc = imgSmallSrc.replace('w500', 'original')
 
@@ -331,7 +331,7 @@ class Home extends View {
   //     to: toEl
   //   })
 
-  //   const { tracks, previewSmall, previewLarge } = this.$refs
+  //   const { tracks, previewSmall, previewLarge } = this.DOM
 
   //   const scrollTop = root.scrollTop
 
@@ -352,7 +352,7 @@ class Home extends View {
   //     previewLarge.src = imgLargeSrc
 
   //     // test
-  //     this.$refs.previewClose.addEventListener('click', () => {
+  //     this.DOM.previewClose.addEventListener('click', () => {
   //       hero.reverse()
   //     }, { once: true })
   //   })

@@ -4,11 +4,11 @@ import {
 
 class View {
   constructor (attr) {
-    this.$refs = {}
+    this.DOM = {}
     this.$el = this._createElement(attr)
   }
 
-  observer (elem, callback, options = null) {
+  intersectionObserver (elem, callback, options = null) {
     elem = elem instanceof NodeList ? Array.from(elem) : elem
 
     const io = new IntersectionObserver((entries, observer) => {
@@ -30,7 +30,7 @@ class View {
   }
 
   lazyLoad (images, options) {
-    this.observer(images, (image) => {
+    this.intersectionObserver(images, (image) => {
       image.onload = () => {
         image.parentNode.classList.add('loaded')
       }
@@ -50,7 +50,7 @@ class View {
     const refs = Array.from(div.querySelectorAll('[ref]'))
     for (const elem of refs) {
       const key = elem.getAttribute('ref')
-      this.$refs[key] = elem
+      this.DOM[key] = elem
 
       elem.removeAttribute('ref')
     }
