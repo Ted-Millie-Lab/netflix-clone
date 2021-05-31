@@ -72,6 +72,7 @@ class Home extends View {
     this._router = router
     this._swiperGroup = []
     this._previewTimer = 0
+    this._youtubeTimer = 0
   }
 
   mounted () {
@@ -287,7 +288,7 @@ class Home extends View {
   }
 
   // https://developers.google.com/youtube/iframe_api_reference?hl=ko
-  async _onYouTubeVideoLoad (videos) {
+  async _loadYouTubeVideo (videos) {
     const { results } = videos
     if (!results.length) {
       return
@@ -346,9 +347,11 @@ class Home extends View {
       }
     })
 
-    let youtubeTimer = 0
-    youtubeTimer = setInterval(() => {
-      if (player.getCurrentTime) {
+    // From: https://stackoverflow.com/questions/9914373/ontimeupdate-with-youtube-api/51552777
+    // 동영상 끝나기 1초 전에 화면에서 없애는 코드
+    // 유튜브 API에 ontimeupdate 이벤트가 따로 없어서 인터벌로 돌림.    
+    this._youtubeTimer = setInterval(() => {
+      if (player.getCurrentTime && player.getDuration) {
         const currentTime = player.getCurrentTime()
         const duration = player.getDuration()
         if (currentTime >= (duration - 1)) {
@@ -395,7 +398,7 @@ class Home extends View {
       previewLarge.src = largeSrc
 
       // 비디오 로드
-      this._onYouTubeVideoLoad(details.videos)
+      this._loadYouTubeVideo(details.videos)
     }
 
     const beforeReverseStart = () => {
@@ -407,6 +410,7 @@ class Home extends View {
       previewLarge.src = ''
       previewMetadata.innerHTML = ''
       previewVideo.innerHTML = '<div id="player"></div>'
+      clearInterval(this._youtubeTimer)
     }
 
     sharedTransition.on('beforePlayStart', beforePlayStart)
@@ -488,10 +492,6 @@ class Home extends View {
       right,
       bottom
     }
-  }
-
-  _hideMiniPreview (event) {
-    clearTimeout(this._previewTimer)
   }
 }
 
