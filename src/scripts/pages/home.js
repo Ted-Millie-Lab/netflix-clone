@@ -184,17 +184,21 @@ class Home extends View {
         })
       )
 
-      let interval = 400
-      let timer = 0
+      let hoverTimeout = 0
+      const mouseenterFn = (event) => {
+        hoverTimeout = setTimeout(() => {
+          this._showMiniPreview(event)
+        }, 400)
+      }
+      const mouseleaveFn = () => {
+        if (hoverTimeout) {
+          clearTimeout(hoverTimeout)
+        }
+      }
+
       images.forEach(image => {
-        image.addEventListener('mouseenter', (event) => {
-          timer = setTimeout(() => {
-            this._showMiniPreview(event)
-          }, interval)
-        })
-        image.addEventListener('mouseleave', (event) => {
-          clearTimeout(timer)
-        })
+        image.addEventListener('mouseenter', mouseenterFn)
+        image.addEventListener('mouseleave', mouseleaveFn)
       })
 
       resolve()
@@ -204,19 +208,18 @@ class Home extends View {
   _setMiniPreviewPos (event) {
     const root = document.documentElement
     const fromEl = event.target
-    const toEl = this.$refs.preview  
+    const toEl = this.$refs.preview
+    const metaEl = this.$refs.previewMetadata
     const rect = this._getRect(fromEl)
     const winW = window.innerWidth
     const width = rect.width * 1.5
-    const height = rect.height * 1.5
+    let height = rect.height * 1.5
+    height = height + metaEl.clientHeight
 
     let top = rect.top - (height - rect.height) / 2
-    // absolute라 스크롤 값 더 해줌
     top = top + root.scrollTop
 
     let left = rect.left - (width - rect.width) / 2
-    // 왼쪽/오른쪽 넘치는지 확인
-    // ? 안맞는데? ㅋ
     if (left <= 0) {
       left = rect.left
     } else if ((left + width) >= winW) {
@@ -228,20 +231,16 @@ class Home extends View {
       left: 0,
       top: 0,
       width: `${width}px`,
-      // height: `${height}px`,
+      height: `${height}px`,
       transform: `translate(${left}px, ${top}px)`
     })
   }
 
-  async _setMiniPreviewMeta (event) {
-    const fromEl = event.target
-    const id = fromEl.closest('[data-id]').dataset.id
-
-    const details = await tmdb.getMovieDetails(id)
-    const average = details.vote_average * 10
-    const runtime = details.runtime
-    const releaseDate = details.release_date.replace(/-/g, '. ')
-    const genres = details.genres.slice(0, 3)
+  _setMiniPreviewMeta (data) {
+    const average = data.vote_average * 10
+    const runtime = data.runtime
+    const releaseDate = data.release_date.replace(/-/g, '. ')
+    const genres = data.genres.slice(0, 3)
 
     this.$refs.previewMetadata.insertAdjacentHTML('beforeend', `
       <div class="nc-preview-buttons">
@@ -272,10 +271,12 @@ class Home extends View {
 
   async _showMiniPreview (event) {
     const fromEl = event.target
-    const toEl = this.$refs.preview    
+    const toEl = this.$refs.preview
+    const id = fromEl.closest('[data-id]').dataset.id
+    const data = await tmdb.getMovieDetails(id)
 
     // 메타데이타 정보 설정
-    await this._setMiniPreviewMeta(event)
+    this._setMiniPreviewMeta(data)
     // preview 위치 설정
     this._setMiniPreviewPos(event)
 
@@ -291,7 +292,7 @@ class Home extends View {
 
     const beforePlayStart = () => {
       addClass(toEl.parentNode, 'mini-expanded')
-      
+
       previewSmall.src = smallSrc
 
       toEl.addEventListener('mouseleave', () => {
