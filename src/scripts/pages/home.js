@@ -270,12 +270,12 @@ class Home extends View {
     `)
   }
 
-  _showMiniPreview (event) {
+  async _showMiniPreview (event) {
     const fromEl = event.target
     const toEl = this.$refs.preview    
 
     // 메타데이타 정보 설정
-    this._setMiniPreviewMeta(event)
+    await this._setMiniPreviewMeta(event)
     // preview 위치 설정
     this._setMiniPreviewPos(event)
 
