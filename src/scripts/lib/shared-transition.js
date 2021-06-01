@@ -15,31 +15,28 @@ class SharedTransition extends EventEmitter {
       from: config.from,
       to: config.to
     }
-
     this._duration = config.duration
-
-    this._isAnimating = false
-    this._isExpanded = false
+    this._points = null
+    this.isAnimating = false
+    this.isExpanded = false
 
     this._init()
   }
 
-  _init () {
-    
-  }
+  _init () {}
 
   play () {
-    if (this._isAnimating) {
+    if (this.isAnimating) {
       return
     }
-    this._isAnimating = true
+    this.isAnimating = true
 
     this.emit('beforePlayStart')
 
     this._setup()
 
-    const fromPos = this._position.from
-    const toPos = this._position.to
+    const fromPos = this._points.from
+    const toPos = this._points.to
 
     addStyle(this.DOM.to, {
       position: 'absolute',
@@ -54,8 +51,8 @@ class SharedTransition extends EventEmitter {
 
     this._animate(toPos.x, toPos.y, toPos.scale)
       .then(() => {
-        this._isAnimating = false
-        this._isExpanded = true
+        this.isAnimating = false
+        this.isExpanded = true
 
         this.emit('afterPlayEnd')
       })
@@ -65,12 +62,12 @@ class SharedTransition extends EventEmitter {
     this.emit('beforeReverseStart')
 
     // 애니메이션 중이 아닐 때만 새로 계산
-    if (!this._isAnimating) {
+    if (!this.isAnimating) {
       this._setup()
     }
 
-    const fromPos = this._position.from
-    const toPos = this._position.to
+    const fromPos = this._points.from
+    const toPos = this._points.to
 
     addStyle(this.DOM.to, {
       position: 'absolute',
@@ -81,8 +78,8 @@ class SharedTransition extends EventEmitter {
 
     this._animate(fromPos.x, fromPos.y, fromPos.scale)
       .then(() => {
-        this._isAnimating = false
-        this._isExpanded = false
+        this.isAnimating = false
+        this.isExpanded = false
 
         emptyStyle(this.DOM.to)
 
@@ -103,15 +100,10 @@ class SharedTransition extends EventEmitter {
   _setup () {
     const root = document.documentElement
 
+    const fromPoint = this._getRect(this.DOM.from)
+    const toPoint = this._getRect(this.DOM.to)
+
     this._points = {
-      from: this._getRect(this.DOM.from),
-      to: this._getRect(this.DOM.to)
-    }
-
-    const fromPoint = this._points.from
-    const toPoint = this._points.to
-
-    this._position = {
       from: {
         scale: fromPoint.width / toPoint.width,
         x: (fromPoint.width / 2) - (toPoint.width / 2) + fromPoint.left,

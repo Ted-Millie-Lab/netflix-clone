@@ -1,17 +1,12 @@
 import View from './view'
 import Swiper from '../lib/swiper'
 import SharedTransition from '../lib/shared-transition'
-// 다 가져오는 게 맞는 것일까
 import icons from '../helper/icons'
 import {
   repeat,
   addClass,
   removeClass,
-  hasClass,
   addStyle,
-  emptyStyle,
-  debounce,
-  prettyTime,
   emptyChild
 } from '../helper/utils'
 import {
@@ -20,38 +15,45 @@ import {
 
 const template = `
   <div class="nc-tracks" ref="tracks">
-    ${(() => {
-      const tracks = [
-        { key: 'trending',title: '지금 뜨는 콘텐츠' },
-        { key: 'animation', title: '애니메이션' },
-        { key: 'romance', title: '로맨스' },
-        { key: 'comedy', title: '코메디' }
-      ]
+  ${(() => {
+    const tracks = [
+      { key: 'trending',title: '지금 뜨는 콘텐츠' },
+      { key: 'animation', title: '애니메이션' },
+      { key: 'romance', title: '로맨스' },
+      { key: 'comedy', title: '코메디' }
+    ]
 
-      return tracks.map(track => {
-        return `
-          <div class="nc-track">
-            <h2 class="nc-title">${track.title}</h2>
-            <div class="nc-inner">
-              <div class="nc-swiper-container">
-                <div class="nc-swiper-prev"></div>
-                <div class="nc-swiper-wrapper" ref="${track.key}">
-                  ${repeat('<div class="nc-swiper-slide"><a href="/"><div class="thumbnail"></div><div class="metadata">&nbsp;</div></a></div>', 12)}
-                </div>
-                <div class="nc-swiper-next"></div>
+    return tracks.map(track => {
+      return `
+        <div class="nc-track">
+          <h2 class="nc-title">${track.title}</h2>
+          <div class="nc-inner">
+            <div class="nc-swiper-container">
+              <div class="nc-swiper-prev"></div>
+              <div class="nc-swiper-wrapper" ref="${track.key}">
+                ${repeat(`
+                  <div class="nc-swiper-slide">
+                    <a href="/">
+                      <div class="thumbnail"></div>
+                      <div class="metadata">&nbsp;</div>
+                    </a>
+                  </div>`
+                , 12)}
               </div>
+              <div class="nc-swiper-next"></div>
             </div>
           </div>
-        `
-      }).join('')
-    })()}
+        </div>
+      `
+    }).join('')
+  })()}
   </div>
   <div class="nc-preview">
     <div class="nc-preview-inner" ref="preview">
       <div class="nc-preview-thumbnail">
-        <img src="" ref="previewSmallImg">
-        <img src="" ref="previewLargeImg">
-        <div class="nc-preview-video" ref="previewVideo">
+        <img src="" ref="smallImg">
+        <img src="" ref="largeImg">
+        <div class="nc-preview-video" ref="youtubeVideo">
           <div id="player"></div>
         </div>
       </div>
@@ -64,7 +66,7 @@ const template = `
             <button class="unlike" type="button">${icons.unlike}</button>
           </div>
           <div class="right">
-            <button class="details" type="button">${icons.arrow_down}</button>
+            <button class="details" ref="details" type="button">${icons.arrow_down}</button>
           </div>
         </div>
         <div class="nc-preview-info">
@@ -258,11 +260,11 @@ class Home extends View {
     })
   }
 
-  _setMiniPreviewMeta (details) {
-    const average = details.vote_average * 10
-    const runtime = details.runtime
-    const releaseDate = details.release_date.replace(/-/g, '. ')
-    const genres = details.genres.slice(0, 3)
+  _setMiniPreviewMeta (data) {
+    const average = data.vote_average * 10
+    const runtime = data.runtime
+    const releaseDate = data.release_date.replace(/-/g, '. ')
+    const genres = data.genres.slice(0, 3)
 
     this.DOM.average.insertAdjacentHTML('beforeend', `${average}% 일치`)
     this.DOM.runtime.insertAdjacentHTML('beforeend', `${runtime}분`)
@@ -300,7 +302,7 @@ class Home extends View {
       await this._loadYouTubeScript()
     }
 
-    const { previewVideo } = this.DOM
+    const { youtubeVideo } = this.DOM
 
     const player = new window.YT.Player('player', {
       width: '100%',
@@ -334,11 +336,11 @@ class Home extends View {
           // }
 
           if (event.data == YT.PlayerState.PLAYING) {
-            addClass(previewVideo, 'is-active')
+            addClass(youtubeVideo, 'is-active')
           }
 
           if (event.data === YT.PlayerState.UNSTARTED) {
-            removeClass(previewVideo, 'is-active')
+            removeClass(youtubeVideo, 'is-active')
           }
         }
       }
@@ -352,7 +354,7 @@ class Home extends View {
         const currentTime = player.getCurrentTime()
         const duration = player.getDuration()
         if (currentTime >= (duration - 1)) {
-          removeClass(previewVideo, 'is-active')
+          removeClass(youtubeVideo, 'is-active')
 
           clearInterval(this._youtubeTimer)
         }
@@ -364,10 +366,10 @@ class Home extends View {
     const fromEl = event.target
     const toEl = this.DOM.preview
     const id = fromEl.closest('[data-id]').dataset.id
-    const details = await tmdb.getMovieDetails(id)
+    const data = await tmdb.getMovieDetails(id)
 
     // 메타데이타 정보 설정
-    this._setMiniPreviewMeta(details)
+    this._setMiniPreviewMeta(data)
     // preview 위치 설정
     this._setMiniPreviewPos(event)
 
@@ -378,19 +380,20 @@ class Home extends View {
     })
 
     const {
-      previewSmallImg,
-      previewLargeImg,
-      previewVideo,
+      smallImg,
+      largeImg,
+      youtubeVideo,
       average,
       runtime,
       releaseDate,
-      genres
+      genres,
+      details
     } = this.DOM
     const smallImgSrc = fromEl.getAttribute('src')
     const largeImgSrc = smallImgSrc.replace('w500', 'original')
 
     const beforePlayStart = () => {
-      previewSmallImg.src = smallImgSrc
+      smallImg.src = smallImgSrc
 
       addClass(toEl.parentNode, 'mini-expanded')
 
@@ -400,27 +403,27 @@ class Home extends View {
     }
     const afterPlayEnd = () => {
       // 원본 이미지 로드
-      previewLargeImg.src = largeImgSrc
+      largeImg.src = largeImgSrc
 
       // 비디오 로드
-      this._loadYouTubeVideo(details.videos)
+      this._loadYouTubeVideo(data.videos)
     }
 
     const beforeReverseStart = () => {
       removeClass(toEl.parentNode, 'mini-expanded')
-      removeClass(previewVideo, 'is-active')
+      removeClass(youtubeVideo, 'is-active')
     }
     const afterReverseEnd = () => {
-      previewSmallImg.src = ''
-      previewLargeImg.src = ''
+      smallImg.src = ''
+      largeImg.src = ''
 
       emptyChild(average)
       emptyChild(runtime)
       emptyChild(releaseDate)
       emptyChild(genres)
-      emptyChild(previewVideo)
+      emptyChild(youtubeVideo)
 
-      previewVideo.insertAdjacentHTML('beforeend', '<div id="player"></div>')
+      youtubeVideo.insertAdjacentHTML('beforeend', '<div id="player"></div>')
 
       clearInterval(this._youtubeTimer)
     }
@@ -444,7 +447,7 @@ class Home extends View {
   //     to: toEl
   //   })
 
-  //   const { tracks, previewSmallImg, previewLargeImg } = this.DOM
+  //   const { tracks, smallImg, largeImg } = this.DOM
 
   //   const scrollTop = root.scrollTop
 
@@ -458,11 +461,11 @@ class Home extends View {
   //     addClass(toEl.parentNode, 'expanded')
 
   //     // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
-  //     previewSmallImg.src = imgsmallImgSrc
+  //     smallImg.src = imgsmallImgSrc
   //   })
   //   hero.on('afterPlayEnd', () => {
   //     // 애니메이션 완료 후 큰 이미지 로드
-  //     previewLargeImg.src = imglargeImgSrc
+  //     largeImg.src = imglargeImgSrc
 
   //     // test
   //     this.DOM.previewClose.addEventListener('click', () => {
@@ -479,8 +482,8 @@ class Home extends View {
   //     root.scrollTop = scrollTop
   //     removeClass(toEl.parentNode, 'expanded')
 
-  //     previewSmallImg.src = ''
-  //     previewLargeImg.src = ''
+  //     smallImg.src = ''
+  //     largeImg.src = ''
   //   })
 
   //   hero.play()
@@ -491,18 +494,14 @@ class Home extends View {
       width,
       height,
       left,
-      top,
-      right,
-      bottom
+      top
     } = elem.getBoundingClientRect()
 
     return {
       width,
       height,
       left,
-      top,
-      right,
-      bottom
+      top
     }
   }
 }
