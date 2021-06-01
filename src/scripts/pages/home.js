@@ -49,13 +49,13 @@ const template = `
   <div class="nc-preview">
     <div class="nc-preview-inner" ref="preview">
       <div class="nc-preview-thumbnail">
-        <img src="" ref="previewSmallImage">
-        <img src="" ref="previewLargeImage">
+        <img src="" ref="previewSmallImg">
+        <img src="" ref="previewLargeImg">
         <div class="nc-preview-video" ref="previewVideo">
           <div id="player"></div>
         </div>
       </div>
-      <div class="nc-preview-metadata">
+      <div class="nc-preview-metadata" ref="previewMetadata">
         <div class="nc-preview-buttons">
           <div class="left">
             <button class="play" type="button">${icons.play}</button>
@@ -378,19 +378,19 @@ class Home extends View {
     })
 
     const {
-      previewSmallImage,
-      previewLargeImage,
+      previewSmallImg,
+      previewLargeImg,
       previewVideo,
       average,
       runtime,
       releaseDate,
       genres
     } = this.DOM
-    const smallSrc = fromEl.getAttribute('src')
-    const largeSrc = smallSrc.replace('w500', 'original')
+    const smallImgSrc = fromEl.getAttribute('src')
+    const largeImgSrc = smallImgSrc.replace('w500', 'original')
 
     const beforePlayStart = () => {
-      previewSmallImage.src = smallSrc
+      previewSmallImg.src = smallImgSrc
 
       addClass(toEl.parentNode, 'mini-expanded')
 
@@ -400,7 +400,7 @@ class Home extends View {
     }
     const afterPlayEnd = () => {
       // 원본 이미지 로드
-      previewLargeImage.src = largeSrc
+      previewLargeImg.src = largeImgSrc
 
       // 비디오 로드
       this._loadYouTubeVideo(details.videos)
@@ -411,8 +411,8 @@ class Home extends View {
       removeClass(previewVideo, 'is-active')
     }
     const afterReverseEnd = () => {
-      previewSmallImage.src = ''
-      previewLargeImage.src = ''
+      previewSmallImg.src = ''
+      previewLargeImg.src = ''
 
       emptyChild(average)
       emptyChild(runtime)
@@ -436,15 +436,15 @@ class Home extends View {
   //   const root = document.documentElement
   //   const fromEl = event.target
   //   const toEl = this.DOM.preview
-  //   const imgSmallSrc = fromEl.getAttribute('src')
-  //   const imgLargeSrc = imgSmallSrc.replace('w500', 'original')
+  //   const imgsmallImgSrc = fromEl.getAttribute('src')
+  //   const imglargeImgSrc = imgsmallImgSrc.replace('w500', 'original')
 
   //   const hero = new SharedTransition({
   //     from: fromEl,
   //     to: toEl
   //   })
 
-  //   const { tracks, previewSmallImage, previewLargeImage } = this.DOM
+  //   const { tracks, previewSmallImg, previewLargeImg } = this.DOM
 
   //   const scrollTop = root.scrollTop
 
@@ -458,11 +458,11 @@ class Home extends View {
   //     addClass(toEl.parentNode, 'expanded')
 
   //     // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
-  //     previewSmallImage.src = imgSmallSrc
+  //     previewSmallImg.src = imgsmallImgSrc
   //   })
   //   hero.on('afterPlayEnd', () => {
   //     // 애니메이션 완료 후 큰 이미지 로드
-  //     previewLargeImage.src = imgLargeSrc
+  //     previewLargeImg.src = imglargeImgSrc
 
   //     // test
   //     this.DOM.previewClose.addEventListener('click', () => {
@@ -479,8 +479,8 @@ class Home extends View {
   //     root.scrollTop = scrollTop
   //     removeClass(toEl.parentNode, 'expanded')
 
-  //     previewSmallImage.src = ''
-  //     previewLargeImage.src = ''
+  //     previewSmallImg.src = ''
+  //     previewLargeImg.src = ''
   //   })
 
   //   hero.play()
