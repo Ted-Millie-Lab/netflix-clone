@@ -11,7 +11,8 @@ import {
   addStyle,
   emptyStyle,
   debounce,
-  prettyTime
+  prettyTime,
+  emptyChild
 } from '../helper/utils'
 import {
   tmdb
@@ -48,13 +49,32 @@ const template = `
   <div class="nc-preview">
     <div class="nc-preview-inner" ref="preview">
       <div class="nc-preview-thumbnail">
-        <img src="" ref="previewSmall">
-        <img src="" ref="previewLarge">
+        <img src="" ref="previewSmallImage">
+        <img src="" ref="previewLargeImage">
         <div class="nc-preview-video" ref="previewVideo">
           <div id="player"></div>
         </div>
       </div>
-      <div class="nc-preview-metadata" ref="previewMetadata"></div>
+      <div class="nc-preview-metadata">
+        <div class="nc-preview-buttons">
+          <div class="left">
+            <button class="play" type="button">${icons.play}</button>
+            <button class="add" type="button">${icons.add}</button>
+            <button class="like" type="button">${icons.like}</button>
+            <button class="unlike" type="button">${icons.unlike}</button>
+          </div>
+          <div class="right">
+            <button class="details" type="button">${icons.arrow_down}</button>
+          </div>
+        </div>
+        <div class="nc-preview-info">
+          <span class="average" ref="average"></span>
+          <span class="runtime" ref="runtime"></span>
+          <span class="date" ref="releaseDate"></span>
+        </div>
+        <div class="nc-preview-genres" ref="genres">
+        </div>
+      </div>
       <div class="nc-preview-close">
         <button type="button" ref="previewClose"><svg viewBox="0 0 24 24" data-uia="previewModal-closebtn" role="button" aria-label="close" tabindex="0"><path d="M12 10.586l7.293-7.293 1.414 1.414L13.414 12l7.293 7.293-1.414 1.414L12 13.414l-7.293 7.293-1.414-1.414L10.586 12 3.293 4.707l1.414-1.414L12 10.586z" fill="currentColor"></path></svg></button>
       </div>
@@ -145,9 +165,7 @@ class Home extends View {
 
   _renderSwipe (elem, results) {
     return new Promise((resolve, reject) => {
-      while (elem.hasChildNodes()) {
-        elem.removeChild(elem.lastChild)
-      }
+      emptyChild(elem)
   
       const length = results.length
       for (let i = 0; i < length; i++) {
@@ -246,31 +264,10 @@ class Home extends View {
     const releaseDate = details.release_date.replace(/-/g, '. ')
     const genres = details.genres.slice(0, 3)
 
-    this.DOM.previewMetadata.insertAdjacentHTML('beforeend', `
-      <div class="nc-preview-buttons">
-        <div class="left">
-          <button class="play" type="button">${icons.play}</button>
-          <button class="add" type="button">${icons.add}</button>
-          <button class="like" type="button">${icons.like}</button>
-          <button class="unlike" type="button">${icons.unlike}</button>
-        </div>
-        <div class="right">
-          <button class="details" type="button">${icons.arrow_down}</button>
-        </div>
-      </div>
-      <div class="nc-preview-info">
-        <span class="average">${average}% 일치</span>
-        <span class="runtime">${runtime}분</span>
-        <span class="date">${releaseDate}</span>
-      </div>
-      <div class="nc-preview-genres">
-        ${(() => {
-          return genres.map(tag => {
-            return `<span>${tag.name}</span>`
-          }).join('')
-        })()}
-      </div>
-    `)
+    this.DOM.average.insertAdjacentHTML('beforeend', `${average}% 일치`)
+    this.DOM.runtime.insertAdjacentHTML('beforeend', `${runtime}분`)
+    this.DOM.releaseDate.insertAdjacentHTML('beforeend', releaseDate)
+    this.DOM.genres.insertAdjacentHTML('beforeend', genres.map(tag => `<span>${tag.name}</span>`).join(''))
   }
 
   // https://developers.google.com/youtube/iframe_api_reference?hl=ko
@@ -380,12 +377,20 @@ class Home extends View {
       duration: '.26s'
     })
 
-    const { previewSmall, previewLarge, previewMetadata, previewVideo } = this.DOM
+    const {
+      previewSmallImage,
+      previewLargeImage,
+      previewVideo,
+      average,
+      runtime,
+      releaseDate,
+      genres
+    } = this.DOM
     const smallSrc = fromEl.getAttribute('src')
     const largeSrc = smallSrc.replace('w500', 'original')
 
     const beforePlayStart = () => {
-      previewSmall.src = smallSrc
+      previewSmallImage.src = smallSrc
 
       addClass(toEl.parentNode, 'mini-expanded')
 
@@ -395,7 +400,7 @@ class Home extends View {
     }
     const afterPlayEnd = () => {
       // 원본 이미지 로드
-      previewLarge.src = largeSrc
+      previewLargeImage.src = largeSrc
 
       // 비디오 로드
       this._loadYouTubeVideo(details.videos)
@@ -406,10 +411,17 @@ class Home extends View {
       removeClass(previewVideo, 'is-active')
     }
     const afterReverseEnd = () => {
-      previewSmall.src = ''
-      previewLarge.src = ''
-      previewMetadata.innerHTML = ''
-      previewVideo.innerHTML = '<div id="player"></div>'
+      previewSmallImage.src = ''
+      previewLargeImage.src = ''
+
+      emptyChild(average)
+      emptyChild(runtime)
+      emptyChild(releaseDate)
+      emptyChild(genres)
+      emptyChild(previewVideo)
+
+      previewVideo.insertAdjacentHTML('beforeend', '<div id="player"></div>')
+
       clearInterval(this._youtubeTimer)
     }
 
@@ -432,7 +444,7 @@ class Home extends View {
   //     to: toEl
   //   })
 
-  //   const { tracks, previewSmall, previewLarge } = this.DOM
+  //   const { tracks, previewSmallImage, previewLargeImage } = this.DOM
 
   //   const scrollTop = root.scrollTop
 
@@ -446,11 +458,11 @@ class Home extends View {
   //     addClass(toEl.parentNode, 'expanded')
 
   //     // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
-  //     previewSmall.src = imgSmallSrc
+  //     previewSmallImage.src = imgSmallSrc
   //   })
   //   hero.on('afterPlayEnd', () => {
   //     // 애니메이션 완료 후 큰 이미지 로드
-  //     previewLarge.src = imgLargeSrc
+  //     previewLargeImage.src = imgLargeSrc
 
   //     // test
   //     this.DOM.previewClose.addEventListener('click', () => {
@@ -467,8 +479,8 @@ class Home extends View {
   //     root.scrollTop = scrollTop
   //     removeClass(toEl.parentNode, 'expanded')
 
-  //     previewSmall.src = ''
-  //     previewLarge.src = ''
+  //     previewSmallImage.src = ''
+  //     previewLargeImage.src = ''
   //   })
 
   //   hero.play()

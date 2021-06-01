@@ -1,5 +1,6 @@
 import EventEmitter from 'events'
 import {
+  emptyChild,
   isFunction
 } from '../helper/utils'
 
@@ -47,9 +48,7 @@ class Router extends EventEmitter {
     }
 
     const $entry = this._$entry
-    while ($entry.hasChildNodes()) {
-      $entry.removeChild($entry.lastChild)
-    }
+    emptyChild($entry)
 
     if (previousComponent) {
       if (isFunction(previousComponent.destroyed)) {

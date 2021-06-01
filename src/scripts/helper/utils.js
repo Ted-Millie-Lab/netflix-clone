@@ -115,3 +115,9 @@ export function prettyTime (t) {
 
   return `${hours}:${minutes}:${second}`
 }
+
+export function emptyChild (element) {
+  while (element.hasChildNodes()) {
+    element.removeChild(element.lastChild)
+  }
+}
