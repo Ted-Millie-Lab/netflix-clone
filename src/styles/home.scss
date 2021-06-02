@@ -108,21 +108,33 @@
   z-index: 999;
   left: 0;
   top: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 56px 0;
   pointer-events: none;
   &.expanded {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    padding: 56px 0;
     pointer-events: auto;
     .nc-preview-inner {
-      width: 90%;
       opacity: 1;
-      
+    }
+    .nc-preview-metadata {
+      opacity: 1;
+    }
+    .nc-preview-synopsis {
+      display: block;
     }
     .nc-preview-close {
       display: block;
+    }
+    .nc-preview-buttons {
+      button {
+        display: flex;
+      }
+      .details {
+        display: none;
+      }
     }
     .nc-preview-thumbnail {
       &::after {
@@ -138,11 +150,9 @@
   }
 
   &.mini-expanded {
-    position: absolute;
     pointer-events: auto;
     cursor: pointer;
     .nc-preview-inner {
-      width: 100%;
       opacity: 1;
     }
     .nc-preview-thumbnail {
@@ -150,6 +160,11 @@
         background: none;
       }
     }
+    .nc-preview-buttons {
+      button {
+        display: flex;
+      }
+    }    
     .nc-preview-metadata {
       opacity: 1;
     }
@@ -161,6 +176,7 @@
 
 .nc-preview-inner {
   overflow: hidden;
+  width: 100%;
   max-width: 1024px;
   border-radius: 4px;
   transform-origin: center top;
@@ -211,6 +227,7 @@
     justify-content: center;
   }
   button {
+    display: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -255,9 +272,17 @@
   }
 }
 
+.nc-preview-synopsis {
+  display: none;
+  margin: 18px 0 10px 0;
+  line-height: 27px;
+  font-size: 18px;  
+}
+
 .nc-preview-close {
   display: none;
   position: absolute;
+  z-index: 1;
   top: 0;
   right: 0;
   margin: 16px;

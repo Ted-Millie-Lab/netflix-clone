@@ -8,19 +8,19 @@ class View {
     this.$el = this._createElement(attr)
   }
 
-  intersectionObserver (elem, callback, options = null) {
+  intersectionObserver (elem, callback) {
     elem = elem instanceof NodeList ? Array.from(elem) : elem
 
     const io = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           if (isFunction(callback)) {
-            callback.call(this, entry.target)
+            callback.call(this, entry.target)    
           }
           io.unobserve(entry.target)
         }
       })
-    }, options)
+    })
 
     if (Array.isArray(elem)) {
       elem.forEach(target => io.observe(target))
@@ -29,13 +29,13 @@ class View {
     }
   }
 
-  lazyLoad (images, options) {
+  lazyLoad (images) {
     this.intersectionObserver(images, (image) => {
       image.onload = () => {
         image.parentNode.classList.add('loaded')
       }
       image.src = image.dataset.src
-    }, options)
+    })
   }
 
   _createElement (attr) {

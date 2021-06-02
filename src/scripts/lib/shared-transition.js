@@ -15,6 +15,9 @@ class SharedTransition extends EventEmitter {
       from: config.from,
       to: config.to
     }
+
+    this.points = config.points || {}
+
     this._duration = config.duration
     this._points = null
     this.isAnimating = false
@@ -90,7 +93,7 @@ class SharedTransition extends EventEmitter {
   _animate (x, y, scale) {
     return new Promise((resolve, reject) => {
       const toEl = this.DOM.to
-      toEl.style.transition = this._duration
+      toEl.style.transition = `transform ${this._duration}`
       toEl.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
 
       toEl.addEventListener('transitionend', resolve, { once: true })
@@ -100,8 +103,8 @@ class SharedTransition extends EventEmitter {
   _setup () {
     const root = document.documentElement
 
-    const fromPoint = this._getRect(this.DOM.from)
-    const toPoint = this._getRect(this.DOM.to)
+    const fromPoint = this.points.from || this._getRect(this.DOM.from)
+    const toPoint = this.points.to || this._getRect(this.DOM.to)
 
     this._points = {
       from: {

@@ -7,7 +7,8 @@ import {
   addClass,
   removeClass,
   addStyle,
-  emptyChild
+  emptyChild,
+  emptyStyle
 } from '../helper/utils'
 import {
   tmdb
@@ -16,10 +17,32 @@ import {
 const template = `
   <div class="nc-tracks" ref="tracks">
   ${(() => {
+    // 0: {id: 28, name: "액션"}
+    // 1: {id: 12, name: "모험"}
+    // 2: {id: 16, name: "애니메이션"}
+    // 3: {id: 35, name: "코미디"}
+    // 4: {id: 80, name: "범죄"}
+    // 5: {id: 99, name: "다큐멘터리"}
+    // 6: {id: 18, name: "드라마"}
+    // 7: {id: 10751, name: "가족"}
+    // 8: {id: 14, name: "판타지"}
+    // 9: {id: 36, name: "역사"}
+    // 10: {id: 27, name: "공포"}
+    // 11: {id: 10402, name: "음악"}
+    // 12: {id: 9648, name: "미스터리"}
+    // 13: {id: 10749, name: "로맨스"}
+    // 14: {id: 878, name: "SF"}
+    // 15: {id: 10770, name: "TV 영화"}
+    // 16: {id: 53, name: "스릴러"}
+    // 17: {id: 10752, name: "전쟁"}
+    // 18: {id: 37, name: "서부"}
     const tracks = [
-      { key: 'trending',title: '지금 뜨는 콘텐츠' },
-      { key: 'animation', title: '애니메이션' },
+      { key: 'trending', title: '지금 뜨는 콘텐츠' },
+      { key: 'tv', title: 'TV 영화' },
+      { key: 'fantasy', title: '판타지' },
+      { key: 'popular', title: '넷플릭스 인기 콘텐츠' },
       { key: 'romance', title: '로맨스' },
+      { key: 'animation', title: '애니메이션' },
       { key: 'comedy', title: '코메디' }
     ]
 
@@ -57,7 +80,7 @@ const template = `
           <div id="player"></div>
         </div>
       </div>
-      <div class="nc-preview-metadata" ref="previewMetadata">
+      <div class="nc-preview-metadata" ref="metadata">
         <div class="nc-preview-buttons">
           <div class="left">
             <button class="play" type="button">${icons.play}</button>
@@ -74,11 +97,12 @@ const template = `
           <span class="runtime" ref="runtime"></span>
           <span class="date" ref="releaseDate"></span>
         </div>
-        <div class="nc-preview-genres" ref="genres">
-        </div>
+        <p class="nc-preview-genres" ref="genres">
+        </p>
+        <div class="nc-preview-synopsis" ref="synopsis"></div>
       </div>
       <div class="nc-preview-close">
-        <button type="button" ref="previewClose"><svg viewBox="0 0 24 24" data-uia="previewModal-closebtn" role="button" aria-label="close" tabindex="0"><path d="M12 10.586l7.293-7.293 1.414 1.414L13.414 12l7.293 7.293-1.414 1.414L12 13.414l-7.293 7.293-1.414-1.414L10.586 12 3.293 4.707l1.414-1.414L12 10.586z" fill="currentColor"></path></svg></button>
+        <button type="button" ref="close"><svg viewBox="0 0 24 24" data-uia="previewModal-closebtn" role="button" aria-label="close" tabindex="0"><path d="M12 10.586l7.293-7.293 1.414 1.414L13.414 12l7.293 7.293-1.414 1.414L12 13.414l-7.293 7.293-1.414-1.414L10.586 12 3.293 4.707l1.414-1.414L12 10.586z" fill="currentColor"></path></svg></button>
       </div>
     </div>
   </div>
@@ -98,28 +122,14 @@ class Home extends View {
   }
 
   mounted () {
-    // 0: {id: 28, name: "액션"}
-    // 1: {id: 12, name: "모험"}
-    // 2: {id: 16, name: "애니메이션"}
-    // 3: {id: 35, name: "코미디"}
-    // 4: {id: 80, name: "범죄"}
-    // 5: {id: 99, name: "다큐멘터리"}
-    // 6: {id: 18, name: "드라마"}
-    // 7: {id: 10751, name: "가족"}
-    // 8: {id: 14, name: "판타지"}
-    // 9: {id: 36, name: "역사"}
-    // 10: {id: 27, name: "공포"}
-    // 11: {id: 10402, name: "음악"}
-    // 12: {id: 9648, name: "미스터리"}
-    // 13: {id: 10749, name: "로맨스"}
-    // 14: {id: 878, name: "SF"}
-    // 15: {id: 10770, name: "TV 영화"}
-    // 16: {id: 53, name: "스릴러"}
-    // 17: {id: 10752, name: "전쟁"}
-    // 18: {id: 37, name: "서부"}
-
     // 지금 뜨는 콘텐츠
     this._renderSwipeTrending()
+    // TV 영화
+    this._renderSwipeTV()    
+    // 판타지
+    this._renderSwipeFantasy()
+    // 넷플릭스 인기 콘텐츠
+    this._renderSwipePopular()    
     // 애니메이션
     this._renderSwipeAnimation()
     // 로맨스
@@ -139,15 +149,31 @@ class Home extends View {
       tmdb.getTrending()
         .then(({ results }) => this._renderSwipe(trending, results))
     })
+  }
+
+  _renderSwipeTV () {
+    const tv = this.DOM.tv
+    this.intersectionObserver(tv, () => {
+      tmdb.getPopularGenre(10770)
+        .then(({ results }) => this._renderSwipe(tv, results))
+    })
   }  
 
-  _renderSwipeAnimation () {
-    const animation = this.DOM.animation
-    this.intersectionObserver(animation, () => {
-      tmdb.getPopularGenre(16)
-        .then(({ results }) => this._renderSwipe(animation, results))
+  _renderSwipeFantasy () {
+    const fantasy = this.DOM.fantasy
+    this.intersectionObserver(fantasy, () => {
+      tmdb.getPopularGenre(14)
+        .then(({ results }) => this._renderSwipe(fantasy, results))
     })
   }
+
+  _renderSwipePopular () {
+    const popular = this.DOM.popular
+    this.intersectionObserver(popular, () => {
+      tmdb.getPopularMovie()
+        .then(({ results }) => this._renderSwipe(popular, results))
+    })
+  }  
 
   _renderSwipeRomance () {
     const romance = this.DOM.romance
@@ -165,6 +191,14 @@ class Home extends View {
     })
   }
 
+  _renderSwipeAnimation () {
+    const animation = this.DOM.animation
+    this.intersectionObserver(animation, () => {
+      tmdb.getPopularGenre(16)
+        .then(({ results }) => this._renderSwipe(animation, results))
+    })
+  }
+
   _renderSwipe (elem, results) {
     return new Promise((resolve, reject) => {
       emptyChild(elem)
@@ -178,7 +212,7 @@ class Home extends View {
             <div class="nc-swiper-slide" data-id="${data.id}">
               <a href="/">
                 <div class="thumbnail">
-                  <img data-src="${tmdb.IMG_URL + data.backdrop_path}">
+                  <img data-src="${tmdb.IMG_URL + data.backdrop_path}" alt="">
                 </div>
                 <div class="metadata">${data.title}</div>
               </a>
@@ -197,7 +231,7 @@ class Home extends View {
   _setupSwipe (elem) {
     return new Promise((resolve, reject) => {
       const images = Array.from(elem.querySelectorAll('[data-src]'))
-      this.lazyLoad(images, { threshold: 0.1 })
+      this.lazyLoad(images)
 
       this._swiperGroup.push(
         new Swiper(elem, {
@@ -233,7 +267,7 @@ class Home extends View {
     const root = document.documentElement
     const fromEl = event.target
     const toEl = this.DOM.preview
-    const metaEl = this.DOM.previewMetadata
+    const metaEl = this.DOM.metadata
     const bounds = this._getRect(fromEl)
     const winW = window.innerWidth
     const width = bounds.width * 1.5
@@ -254,9 +288,9 @@ class Home extends View {
       position: 'absolute',
       left: 0,
       top: 0,
-      width: `${width}px`,
-      height: `${height}px`,
-      transform: `translate(${left}px, ${top}px)`
+      width: `${Math.ceil(width)}px`,
+      height: `${Math.ceil(height)}px`,
+      transform: `translate(${Math.ceil(left)}px, ${Math.ceil(top)}px)`
     })
   }
 
@@ -265,11 +299,13 @@ class Home extends View {
     const runtime = data.runtime
     const releaseDate = data.release_date.replace(/-/g, '. ')
     const genres = data.genres.slice(0, 3)
+    const synopsis = data.overview
 
     this.DOM.average.insertAdjacentHTML('beforeend', `${average}% 일치`)
     this.DOM.runtime.insertAdjacentHTML('beforeend', `${runtime}분`)
     this.DOM.releaseDate.insertAdjacentHTML('beforeend', releaseDate)
     this.DOM.genres.insertAdjacentHTML('beforeend', genres.map(tag => `<span>${tag.name}</span>`).join(''))
+    this.DOM.synopsis.insertAdjacentHTML('beforeend', synopsis)
   }
 
   // https://developers.google.com/youtube/iframe_api_reference?hl=ko
@@ -387,23 +423,35 @@ class Home extends View {
       runtime,
       releaseDate,
       genres,
-      details
+      details,
+      synopsis
     } = this.DOM
     const smallImgSrc = fromEl.getAttribute('src')
     const largeImgSrc = smallImgSrc.replace('w500', 'original')
 
+    const reverse = () => {
+      sharedTransition.reverse()
+    }
+
     const beforePlayStart = () => {
+      // w500 사이즈 이미지 로드
       smallImg.src = smallImgSrc
 
       addClass(toEl.parentNode, 'mini-expanded')
 
-      toEl.addEventListener('mouseleave', () => {
-        sharedTransition.reverse()
-      }, { once: true })
+      // 영역 바깥으로 나갈시 원본 상태로 되돌림
+      toEl.addEventListener('mouseleave', reverse, { once: true })
     }
     const afterPlayEnd = () => {
       // 원본 이미지 로드
       largeImg.src = largeImgSrc
+
+      // 상세 페이지(?)로 이동
+      details.addEventListener('click', () => {
+        this._showPreview(toEl)
+
+        toEl.removeEventListener('mouseleave', reverse)
+      })
 
       // 비디오 로드
       this._loadYouTubeVideo(data.videos)
@@ -411,6 +459,7 @@ class Home extends View {
 
     const beforeReverseStart = () => {
       removeClass(toEl.parentNode, 'mini-expanded')
+      removeClass(toEl.parentNode, 'expanded')
       removeClass(youtubeVideo, 'is-active')
     }
     const afterReverseEnd = () => {
@@ -422,6 +471,7 @@ class Home extends View {
       emptyChild(releaseDate)
       emptyChild(genres)
       emptyChild(youtubeVideo)
+      emptyChild(synopsis)
 
       youtubeVideo.insertAdjacentHTML('beforeend', '<div id="player"></div>')
 
@@ -432,6 +482,45 @@ class Home extends View {
     sharedTransition.on('afterPlayEnd', afterPlayEnd)
     sharedTransition.on('beforeReverseStart', beforeReverseStart)
     sharedTransition.on('afterReverseEnd', afterReverseEnd)
+    sharedTransition.play()
+
+    this._miniSharedTransition = sharedTransition
+  }
+
+  _showPreview (elem) {
+    const fromEl = elem
+    const toEl = elem
+
+    const sharedTransition = new SharedTransition({
+      from: fromEl,
+      to: toEl,
+      points: {
+        from: this._getRect(fromEl)
+      },
+      duration: '.24s'
+    })
+
+    const {
+      close
+    } = this.DOM
+
+    const reverse = () => {
+      this._miniSharedTransition.reverse()
+    }
+
+    const beforePlayStart = () => {      
+      removeClass(toEl.parentNode, 'mini-expanded')
+      addClass(toEl.parentNode, 'expanded')
+
+      emptyStyle(toEl)
+    }
+
+    const afterPlayEnd = () => {
+      close.addEventListener('click', reverse, { once: true })
+    }
+
+    sharedTransition.on('beforePlayStart', beforePlayStart)
+    sharedTransition.on('afterPlayEnd', afterPlayEnd)
     sharedTransition.play()
   }
 
@@ -494,14 +583,16 @@ class Home extends View {
       width,
       height,
       left,
-      top
+      top,
+      right
     } = elem.getBoundingClientRect()
 
     return {
       width,
       height,
       left,
-      top
+      top,
+      right
     }
   }
 }
