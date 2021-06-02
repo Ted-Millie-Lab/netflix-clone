@@ -121,6 +121,7 @@ class Home extends View {
     this._swiperGroup = []
     this._previewTimer = 0
     this._youtubeTimer = 0
+    this._beforeScrollTop = 0
     this._isScrolling = false
   }
 
@@ -376,15 +377,6 @@ class Home extends View {
           event.target.playVideo()
         },
         onStateChange: (event) => {
-          // YT.PlayerState = {
-            // BUFFERING: 3
-            // CUED: 5
-            // ENDED: 0
-            // PAUSED: 2
-            // PLAYING: 1
-            // UNSTARTED: -1
-          // }
-
           if (event.data == YT.PlayerState.PLAYING) {
             addClass(youtubeVideo, 'is-active')
           }
@@ -413,6 +405,7 @@ class Home extends View {
   }
 
   async _showMiniPreview (event) {
+    const root = document.documentElement
     const fromEl = event.target
     const toEl = this.DOM.preview
     const id = fromEl.closest('[data-id]').dataset.id
@@ -438,7 +431,8 @@ class Home extends View {
       releaseDate,
       genres,
       details,
-      synopsis
+      synopsis,
+      tracks
     } = this.DOM
     const smallImgSrc = fromEl.getAttribute('src')
     const largeImgSrc = smallImgSrc.replace('w500', 'original')
@@ -465,7 +459,7 @@ class Home extends View {
         this._showPreview(toEl)
 
         toEl.removeEventListener('mouseleave', reverse)
-      })
+      }, { once: true })
 
       // 비디오 로드
       this._loadYouTubeVideo(data.videos)
@@ -476,17 +470,19 @@ class Home extends View {
       removeClass(toEl.parentNode, 'expanded')
       removeClass(youtubeVideo, 'is-active')
     }
-    const afterReverseEnd = () => {
+    const afterReverseEnd = () => {      
       smallImg.src = ''
       largeImg.src = ''
+
+      emptyStyle(tracks)
+      root.scrollTop = this._beforeScrollTop
 
       emptyChild(average)
       emptyChild(runtime)
       emptyChild(releaseDate)
       emptyChild(genres)
-      emptyChild(youtubeVideo)
       emptyChild(synopsis)
-
+      emptyChild(youtubeVideo)
       youtubeVideo.insertAdjacentHTML('beforeend', '<div id="player"></div>')
 
       clearInterval(this._youtubeTimer)
@@ -502,6 +498,7 @@ class Home extends View {
   }
 
   _showPreview (elem) {
+    const root = document.documentElement
     const fromEl = elem
     const toEl = elem
 
@@ -515,18 +512,25 @@ class Home extends View {
     })
 
     const {
+      tracks,
       close
     } = this.DOM
+
+    this._beforeScrollTop = root.scrollTop
 
     const reverse = () => {
       this._miniSharedTransition.reverse()
     }
 
-    const beforePlayStart = () => {      
+    const beforePlayStart = () => {
       removeClass(toEl.parentNode, 'mini-expanded')
       addClass(toEl.parentNode, 'expanded')
-
       emptyStyle(toEl)
+      addStyle(tracks, {
+        position: 'fixed',
+        top: `${-this._beforeScrollTop}px`,
+        paddingTop: '68px'
+      })
     }
 
     const afterPlayEnd = () => {
