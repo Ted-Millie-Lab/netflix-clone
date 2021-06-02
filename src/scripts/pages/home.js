@@ -10,7 +10,8 @@ import {
   emptyChild,
   emptyStyle,
   debounce,
-  throttle
+  throttle,
+  hasClass
 } from '../helper/utils'
 import {
   tmdb
@@ -440,6 +441,10 @@ class Home extends View {
     const reverse = () => {
       sharedTransition.reverse()
     }
+    const showPreview = () => {
+      this._showPreview(toEl)
+      toEl.removeEventListener('mouseleave', reverse)
+    }
 
     const beforePlayStart = () => {
       // w500 사이즈 이미지 로드
@@ -455,11 +460,7 @@ class Home extends View {
       largeImg.src = largeImgSrc
 
       // 상세 페이지(?)로 이동
-      details.addEventListener('click', () => {
-        this._showPreview(toEl)
-
-        toEl.removeEventListener('mouseleave', reverse)
-      }, { once: true })
+      details.addEventListener('click', showPreview, { once: true })
 
       // 비디오 로드
       this._loadYouTubeVideo(data.videos)
@@ -469,13 +470,16 @@ class Home extends View {
       removeClass(toEl.parentNode, 'mini-expanded')
       removeClass(toEl.parentNode, 'expanded')
       removeClass(youtubeVideo, 'is-active')
+      
     }
     const afterReverseEnd = () => {      
       smallImg.src = ''
       largeImg.src = ''
 
-      emptyStyle(tracks)
-      root.scrollTop = this._beforeScrollTop
+      if (tracks.style.position === 'fixed') {
+        emptyStyle(tracks)
+        root.scrollTop = this._beforeScrollTop
+      }
 
       emptyChild(average)
       emptyChild(runtime)
@@ -483,9 +487,13 @@ class Home extends View {
       emptyChild(genres)
       emptyChild(synopsis)
       emptyChild(youtubeVideo)
-      youtubeVideo.insertAdjacentHTML('beforeend', '<div id="player"></div>')
 
+      youtubeVideo.insertAdjacentHTML('beforeend', '<div id="player"></div>')
       clearInterval(this._youtubeTimer)
+
+      details.removeEventListener('click', showPreview)
+
+      this._miniSharedTransition = null
     }
 
     sharedTransition.on('beforePlayStart', beforePlayStart)
@@ -526,6 +534,8 @@ class Home extends View {
       removeClass(toEl.parentNode, 'mini-expanded')
       addClass(toEl.parentNode, 'expanded')
       emptyStyle(toEl)
+
+      console.log(this._beforeScrollTop)
       addStyle(tracks, {
         position: 'fixed',
         top: `${-this._beforeScrollTop}px`,
