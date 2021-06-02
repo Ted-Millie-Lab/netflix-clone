@@ -153,8 +153,8 @@ class Home extends View {
   }
 
   _initEvents () {
-    this._onScrollStart = this._onScrollStart
-    this._onScrollEnd = debounce(this._onScrollEnd, 400)
+    this._onScrollStart = this._onScrollStart.bind(this)
+    this._onScrollEnd = debounce(this._onScrollEnd.bind(this), 400)
     window.addEventListener('scroll', this._onScrollStart)
     window.addEventListener('scroll', this._onScrollEnd)
   }
