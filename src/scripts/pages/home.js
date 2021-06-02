@@ -109,6 +109,7 @@ const template = `
       </div>
     </div>
   </div>
+  <div class="overlay" ref="overlay"></div>
 `
 
 class Home extends View {
@@ -433,7 +434,8 @@ class Home extends View {
       genres,
       details,
       synopsis,
-      tracks
+      tracks,
+      overlay
     } = this.DOM
     const smallImgSrc = fromEl.getAttribute('src')
     const largeImgSrc = smallImgSrc.replace('w500', 'original')
@@ -450,7 +452,7 @@ class Home extends View {
       // w500 사이즈 이미지 로드
       smallImg.src = smallImgSrc
 
-      addClass(toEl.parentNode, 'mini-expanded')
+      addClass(toEl.parentNode, 'mini-expanded')      
 
       // 영역 바깥으로 나갈시 원본 상태로 되돌림
       toEl.addEventListener('mouseleave', reverse, { once: true })
@@ -470,7 +472,7 @@ class Home extends View {
       removeClass(toEl.parentNode, 'mini-expanded')
       removeClass(toEl.parentNode, 'expanded')
       removeClass(youtubeVideo, 'is-active')
-      
+      removeClass(overlay, 'is-active')
     }
     const afterReverseEnd = () => {      
       smallImg.src = ''
@@ -521,7 +523,8 @@ class Home extends View {
 
     const {
       tracks,
-      close
+      close,
+      overlay
     } = this.DOM
 
     this._beforeScrollTop = root.scrollTop
@@ -535,12 +538,13 @@ class Home extends View {
       addClass(toEl.parentNode, 'expanded')
       emptyStyle(toEl)
 
-      console.log(this._beforeScrollTop)
       addStyle(tracks, {
         position: 'fixed',
         top: `${-this._beforeScrollTop}px`,
         paddingTop: '68px'
       })
+
+      addClass(overlay, 'is-active')
     }
 
     const afterPlayEnd = () => {
@@ -551,60 +555,6 @@ class Home extends View {
     sharedTransition.on('afterPlayEnd', afterPlayEnd)
     sharedTransition.play()
   }
-
-  // _showPreview (event) {
-  //   const root = document.documentElement
-  //   const fromEl = event.target
-  //   const toEl = this.DOM.preview
-  //   const imgsmallImgSrc = fromEl.getAttribute('src')
-  //   const imglargeImgSrc = imgsmallImgSrc.replace('w500', 'original')
-
-  //   const hero = new SharedTransition({
-  //     from: fromEl,
-  //     to: toEl
-  //   })
-
-  //   const { tracks, smallImg, largeImg } = this.DOM
-
-  //   const scrollTop = root.scrollTop
-
-  //   hero.on('beforePlayStart', () => {
-  //     addStyle(tracks, {
-  //       position: 'fixed',
-  //       top: `${-scrollTop}px`,
-  //       paddingTop: '68px'
-  //     })
-
-  //     addClass(toEl.parentNode, 'expanded')
-
-  //     // 빠르게 이미지를 보여주기 위해 기존 작은 이미지 복사
-  //     smallImg.src = imgsmallImgSrc
-  //   })
-  //   hero.on('afterPlayEnd', () => {
-  //     // 애니메이션 완료 후 큰 이미지 로드
-  //     largeImg.src = imglargeImgSrc
-
-  //     // test
-  //     this.DOM.previewClose.addEventListener('click', () => {
-  //       hero.reverse()
-  //     }, { once: true })
-  //   })
-
-  //   hero.on('beforeReverseStart', () => {
-
-  //   })
-
-  //   hero.on('afterReverseEnd', () => {
-  //     emptyStyle(tracks)
-  //     root.scrollTop = scrollTop
-  //     removeClass(toEl.parentNode, 'expanded')
-
-  //     smallImg.src = ''
-  //     largeImg.src = ''
-  //   })
-
-  //   hero.play()
-  // }
 
   _onScrollStart () {
     if (this._isScrolling) {
