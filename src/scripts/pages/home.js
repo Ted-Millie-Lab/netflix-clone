@@ -8,7 +8,9 @@ import {
   removeClass,
   addStyle,
   emptyChild,
-  emptyStyle
+  emptyStyle,
+  debounce,
+  throttle
 } from '../helper/utils'
 import {
   tmdb
@@ -43,7 +45,7 @@ const template = `
       { key: 'popular', title: '넷플릭스 인기 콘텐츠' },
       { key: 'romance', title: '로맨스' },
       { key: 'animation', title: '애니메이션' },
-      { key: 'comedy', title: '코메디' }
+      { key: 'action', title: '액션' }
     ]
 
     return tracks.map(track => {
@@ -61,7 +63,7 @@ const template = `
                       <div class="metadata">&nbsp;</div>
                     </a>
                   </div>`
-                , 12)}
+                , 7)}
               </div>
               <div class="nc-swiper-next"></div>
             </div>
@@ -119,6 +121,7 @@ class Home extends View {
     this._swiperGroup = []
     this._previewTimer = 0
     this._youtubeTimer = 0
+    this._isScrolling = false
   }
 
   mounted () {
@@ -134,13 +137,24 @@ class Home extends View {
     this._renderSwipeAnimation()
     // 로맨스
     this._renderSwipeRomance()
-    // 코메디
-    this._renderSwipeComedy()
+    // 액션
+    this._renderSwipeAction()
+
+    this._initEvents()
   }
 
   destroyed () {
+    window.removeEventListener('scroll', this._onScrollStart)
+    window.removeEventListener('scroll', this._onScrollEnd)    
     this._swiperGroup.forEach(swiper => swiper.destroy())
     this._swiperGroup = null
+  }
+
+  _initEvents () {
+    this._onScrollStart = this._onScrollStart
+    this._onScrollEnd = debounce(this._onScrollEnd, 400)
+    window.addEventListener('scroll', this._onScrollStart)
+    window.addEventListener('scroll', this._onScrollEnd)
   }
 
   _renderSwipeTrending () {
@@ -183,11 +197,11 @@ class Home extends View {
     })
   }
 
-  _renderSwipeComedy () {
-    const comedy = this.DOM.comedy
-    this.intersectionObserver(comedy, () => {
-      tmdb.getPopularGenre(35)
-        .then(({ results }) => this._renderSwipe(comedy, results))
+  _renderSwipeAction () {
+    const action = this.DOM.action
+    this.intersectionObserver(action, () => {
+      tmdb.getPopularGenre(28)
+        .then(({ results }) => this._renderSwipe(action, results))
     })
   }
 
@@ -577,6 +591,26 @@ class Home extends View {
 
   //   hero.play()
   // }
+
+  _onScrollStart () {
+    if (this._isScrolling) {
+      return
+    }
+    this._isScrolling = true
+
+    addStyle(document.body, {
+      pointerEvents: 'none'
+    })
+  }
+
+  _onScrollEnd () {
+    if (!this._isScrolling) {
+      return
+    }
+    this._isScrolling = false
+
+    emptyStyle(document.body)
+  }  
 
   _getRect (elem) {
     const {

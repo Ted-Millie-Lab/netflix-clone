@@ -40,6 +40,19 @@ export function debounce (fn, time) {
   }
 }
 
+// 어디서 가져왔더라..?
+export function throttle (fn, delay) {
+  var allowSample = true;
+
+  return function(e) {
+    if (allowSample) {
+      allowSample = false;
+      setTimeout(function() { allowSample = true; }, delay);
+      fn(e);
+    }
+  };
+}
+
 export function addStyle (element, value) {
   if (isNumber(element.length)) {
     Array.from(element).forEach(
