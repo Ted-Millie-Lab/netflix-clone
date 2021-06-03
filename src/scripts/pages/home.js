@@ -103,6 +103,9 @@ const template = `
         <p class="nc-preview-genres" ref="genres">
         </p>
         <div class="nc-preview-synopsis" ref="synopsis"></div>
+        <div class="nc-preview-similar">
+          <h3>비슷한 콘텐츠</h3>
+        </div>        
       </div>
       <div class="nc-preview-close">
         <button type="button" ref="close"><svg viewBox="0 0 24 24" data-uia="previewModal-closebtn" role="button" aria-label="close" tabindex="0"><path d="M12 10.586l7.293-7.293 1.414 1.414L13.414 12l7.293 7.293-1.414 1.414L12 13.414l-7.293 7.293-1.414-1.414L10.586 12 3.293 4.707l1.414-1.414L12 10.586z" fill="currentColor"></path></svg></button>
@@ -155,7 +158,7 @@ class Home extends View {
 
   _initEvents () {
     this._onScrollStart = this._onScrollStart.bind(this)
-    this._onScrollEnd = debounce(this._onScrollEnd.bind(this), 400)
+    this._onScrollEnd = debounce(this._onScrollEnd.bind(this), 250)
     window.addEventListener('scroll', this._onScrollStart)
     window.addEventListener('scroll', this._onScrollEnd)
   }
@@ -574,7 +577,7 @@ class Home extends View {
     this._isScrolling = false
 
     emptyStyle(document.body)
-  }  
+  }
 
   _getRect (elem) {
     const {
